@@ -2,7 +2,7 @@
 -- A Neovim plugin for managing Kanban boards in Markdown files
 
 return {
-  "theprintedbird/kanban-md",
+  "theprintedbird/kanban-md.nvim",
 	lazy = true,
   ft = "markdown",
   config = function()
