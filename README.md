@@ -1,6 +1,6 @@
-# Kanban
+# Kanban-md.nvim
 
-Kanban in Markdown files. For use with Obsidian and Neovim.
+Kanban in Markdown files. For use Neovim.
 
 ## Goals
 
