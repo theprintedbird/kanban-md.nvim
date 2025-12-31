@@ -2,6 +2,13 @@
 -- This is the Neovim-specific entry point that sets up commands, keymaps, and autocommands
 -- For CLI usage, see lua/kanban-md/cli.lua
 
+-- Add submodule to package path
+-- Determine plugin root by finding the directory containing this init.lua file
+local current_file = debug.getinfo(1, "S").source:sub(2)
+local plugin_root = vim.fn.fnamemodify(current_file, ":p:h:h:h")
+local lib_path = plugin_root .. '/lib/kanban-md/lua'
+package.path = lib_path .. '/?.lua;' .. lib_path .. '/?/init.lua;' .. package.path
+
 local Board = require('kanban-md.board')
 local Column = require('kanban-md.column')
 local Card = require('kanban-md.card')

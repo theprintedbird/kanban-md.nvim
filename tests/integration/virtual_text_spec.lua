@@ -1,3 +1,6 @@
+-- Set up package path for engine submodule
+require('tests.test_helper')
+
 local Board = require('kanban-md.board')
 local Card = require('kanban-md.card')
 local adapter_registry = require('kanban-md.adapter_registry')

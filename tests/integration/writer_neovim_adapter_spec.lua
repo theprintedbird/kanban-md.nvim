@@ -7,6 +7,9 @@ if not vim or not vim.api then
   return
 end
 
+-- Set up package path for engine submodule
+require('tests.test_helper')
+
 _G._TEST = true
 
 local Board = require("kanban-md.board")

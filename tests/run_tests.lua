@@ -1,10 +1,11 @@
 -- tests/run_tests.lua
 -- Test runner for Kanban plugin tests
 
--- Add the project root to Lua path so modules can be required
+-- Add the project root and submodule to Lua path so modules can be required
 local current_file = debug.getinfo(1, "S").source:sub(2)
 local project_root = vim.fn.fnamemodify(current_file, ":p:h:h")
-package.path = package.path .. ";" .. project_root .. "/?.lua"
+local lib_path = project_root .. "/lib/kanban-md/lua"
+package.path = lib_path .. "/?.lua;" .. lib_path .. "/?/init.lua;" .. package.path .. ";" .. project_root .. "/?.lua"
 
 -- Require plenary test harness with error checking
 local plenary_success, plenary = pcall(require, "plenary.test_harness")
@@ -17,11 +18,20 @@ end
 local function run_test_file(test_file, plenary_path, project_root)
   local test_name = vim.fn.fnamemodify(test_file, ":t")
 
+  -- Set up paths to include the engine submodule
+  -- Add both the lib directory and set package.path
+  local lib_path = vim.fn.fnamemodify(project_root .. "/lib/kanban-md/lua", ":p")
+  local lib_root = vim.fn.fnamemodify(project_root .. "/lib/kanban-md", ":p")
+
   -- Build the command to run the test in a separate Neovim process
+  -- Add lib to runtime path AND set package.path
   local cmd = string.format(
-    'nvim --headless --cmd "set rtp+=%s,\\"%s\\"" -c "lua require(\'plenary.test_harness\').test_file(\'%s\')" -c "quit"',
+    'nvim --headless --cmd "set rtp+=%s,\\"%s\\"" --cmd "set rtp+=\\"%s\\"" --cmd "lua package.path = \\"%s?.lua;%s?/init.lua;\\" .. package.path" -c "lua require(\'plenary.test_harness\').test_file(\'%s\')" -c "quit"',
     plenary_path,
     project_root,
+    lib_root,
+    lib_path,
+    lib_path,
     test_file
   )
 
