@@ -9,8 +9,8 @@ kanban-md.nvim is the **Neovim plugin layer** of the kanban-md project. It provi
 kanban-md used to be a single repository. It has since been split into three:
 
 - **[kanban-md](https://github.com/theprintedbird/kanban-md)** – defines the markdown syntax/spec for kanban boards (columns, cards, properties, archive, configuration comments).
-- **[kanban-md-engine](https://github.com/theprintedbird/kanban-md-engine)** – the platform-agnostic Lua engine: parsing, writing, board/column/card model, triggers, stats, validation, dependency/subtask handling. Included here as a git submodule (`lib/kanban-md`).
-- **kanban-md.nvim** (this repo) – the Neovim integration: user commands, keymaps, buffer/cursor handling, virtual text (WIP warnings, cycle time), and the adapter that lets the engine talk to Neovim.
+- **[kanban-md-engine](https://github.com/theprintedbird/kanban-md-engine)** – the platform-agnostic Lua engine: parsing, writing, board/column/card model, triggers, stats, validation, dependency/subtask handling. Included here as a git submodule (`lib/kanban-md-engine`).
+- **[kanban-md.nvim](https://github.com/theprintedbird/kanban-md.nvim)** (this repo) – the Neovim integration: user commands, keymaps, buffer/cursor handling, virtual text (WIP warnings, cycle time), and the adapter that lets the engine talk to Neovim.
 
 If you're looking for details on the markdown syntax itself, or how the parser/board/trigger model works, see the `kanban-md` and `kanban-md-engine` repositories. This README only covers what lives in kanban-md.nvim.
 
@@ -29,7 +29,7 @@ This plugin uses an **adapter pattern** to keep the engine platform-agnostic:
 │   - prompt_input() / prompt_select()
 │   - cursor & extmark operations
 ├─────────────────────────────────────────┤
-│   kanban-md-engine (git submodule)        │  lib/kanban-md
+│   kanban-md-engine (git submodule)        │  lib/kanban-md-engine
 │   Board / Column / Card, parser, writer,  │
 │   triggers, stats, config, validation     │
 └─────────────────────────────────────────┘
@@ -46,7 +46,7 @@ See `lua/kanban-md/adapters/README.md` for the full adapter interface and how to
 
 ## Installation
 
-kanban-md.nvim depends on `kanban-md-engine`, included as a git submodule at `lib/kanban-md`. Make sure submodules are fetched, however you install the plugin.
+kanban-md.nvim depends on `kanban-md-engine`, included as a git submodule at `lib/kanban-md-engine`. Make sure submodules are fetched, however you install the plugin.
 
 ### lazy.nvim
 ```lua
@@ -54,7 +54,7 @@ kanban-md.nvim depends on `kanban-md-engine`, included as a git submodule at `li
   "theprintedbird/kanban-md.nvim",
   lazy = true,
   ft = "markdown",
-  submodules = true, -- lazy.nvim will fetch lib/kanban-md for you
+  submodules = true, -- lazy.nvim will fetch lib/kanban-md-engine for you
   config = function()
     require('kanban-md').setup({
       -- Optional configuration
@@ -87,6 +87,7 @@ use {
 
 ```sh
 git clone --recurse-submodules https://github.com/theprintedbird/kanban-md.nvim ~/.config/nvim/pack/plugins/start/kanban-md.nvim
+# or wherever your config is (XDG_CONFIG_HOME etc)
 ```
 
 If you already cloned without `--recurse-submodules`, run `git submodule update --init` inside the plugin directory.
@@ -121,7 +122,7 @@ If you already cloned without `--recurse-submodules`, run `git submodule update 
     │       ├── neovim.lua               -- Neovim adapter
     │       ├── cli.lua                  -- CLI adapter
     │       └── README.md                -- adapter docs
-    ├── lib/kanban-md/                  -- kanban-md-engine (git submodule)
+    ├── lib/kanban-md-engine/                  -- kanban-md-engine (git submodule)
     └── tests/                          -- plenary.nvim specs for this plugin
 
 ## Board Detection
@@ -173,7 +174,7 @@ For the full list of config options, property types, triggers, and how to write 
 
 ## Testing
 
-This plugin's own tests (buffer handling, virtual text, cursor positioning) use [plenary.nvim](https://github.com/nvim-lua/plenary.nvim) and live under `tests/`. They require the `lib/kanban-md` submodule to be initialised, since commands are exercised against the real engine.
+This plugin's own tests (buffer handling, virtual text, cursor positioning) use [plenary.nvim](https://github.com/nvim-lua/plenary.nvim) and live under `tests/`. They require the `lib/kanban-md-engine` submodule to be initialised, since commands are exercised against the real engine.
 
 ```sh
 git submodule update --init
