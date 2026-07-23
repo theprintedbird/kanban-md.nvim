@@ -1,3 +1,3 @@
-[submodule "lib/kanban-md"]
-	path = lib/kanban-md
+[submodule "lib/kanban-md-engine"]
+	path = lib/kanban-md-engine
 	url = git@github.com:theprintedbird/kanban-md-engine.git

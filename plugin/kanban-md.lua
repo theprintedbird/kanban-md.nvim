@@ -11,7 +11,7 @@ end
 -- Determine plugin root by finding the directory containing this file
 local current_file = debug.getinfo(1, "S").source:sub(2)
 local plugin_root = vim.fn.fnamemodify(current_file, ":p:h:h")
-local lib_path = plugin_root .. '/lib/kanban-md/lua'
+local lib_path = plugin_root .. '/lib/kanban-md-engine/lua'
 package.path = lib_path .. '/?.lua;' .. lib_path .. '/?/init.lua;' .. package.path
 
 -- Register the commands
