@@ -23,14 +23,16 @@ jobs:
     timeout-minutes: 10
     steps:
       # No submodule: .luacheckrc excludes lib/, since the engine lints itself.
-      - uses: actions/checkout@v7
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
 
-      - uses: leafo/gh-actions-lua@v13
+      - uses: leafo/gh-actions-lua@6919171ccf181b826f44b9bca76307b577217377 # v13.0.0
         # LuaJIT is what Neovim embeds, matching std = "luajit" in .luacheckrc.
         with:
           luaVersion: "luajit-2.1"
 
-      - uses: leafo/gh-actions-luarocks@v6
+      - uses: leafo/gh-actions-luarocks@35d062def313a7699a0d513e996bcf4352f05389 # v6.1.0
 
       - name: Install luacheck
         run: luarocks install luacheck
@@ -47,24 +49,27 @@ jobs:
       matrix:
         os: [ubuntu-latest, macos-latest]
     steps:
-      - uses: actions/checkout@v7
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         # The engine submodule is private and its .gitmodules URL is SSH,
         # which the checkout action's HTTPS token can't follow. It's fetched
-        # below once the deploy key is loaded.
+        # below once the deploy key is loaded, so the token needn't be left
+        # in .git/config either.
         with:
           submodules: false
+          persist-credentials: false
 
       - name: Load the engine deploy key
         # A read-only deploy key on kanban-md-engine. Loading it into an agent
         # lets the SSH URL in .gitmodules stay as it is for local development.
-        uses: webfactory/ssh-agent@v0.10.0
+        # Pinned to a commit, since this step is handed the private key.
+        uses: webfactory/ssh-agent@e83874834305fe9a4a2997156cb26c5de65a8555 # v0.10.0
         with:
           ssh-private-key: ${{ secrets.ENGINE_DEPLOY_KEY }}
 
       - name: Fetch the engine submodule
         run: git submodule update --init --recursive
 
-      - uses: rhysd/action-setup-vim@v1
+      - uses: rhysd/action-setup-vim@febef33995d6649302e9d88dda81e071b68f16a7 # v1.6.1
         with:
           neovim: true
           version: stable
