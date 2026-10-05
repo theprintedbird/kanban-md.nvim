@@ -9,7 +9,6 @@
 
 ###### Ready
 
-- CI 3: add .github/workflows/test.yml (push master, PRs, dispatch; contents read; PR concurrency cancel; ubuntu+macos, nvim stable via rhysd/action-setup-vim; submodule via webfactory/ssh-agent plus ENGINE_DEPLOY_KEY); needs CI 1, 2, 4 <!-- complexity: 2, ready: 1791188172 -->
 - CI 4 (manual): create a read-only deploy key on kanban-md-engine and store its private half as the ENGINE_DEPLOY_KEY Actions secret on kanban-md.nvim <!-- complexity: 1, ready: 1791188175 -->
 - CI 5: add .luacheckrc (modelled on the engine's) and a luacheck lint job; fix or justify warnings <!-- complexity: 2, ready: 1791188178 -->
 - CI 6: copy the engine's .actrc for local act runs, add a CI badge and CI/deploy-key notes to README <!-- complexity: 1, ready: 1791188181 -->
@@ -23,6 +22,7 @@
 ###### In Progress
 
 - Set up Github workflows/actions for testing <!-- backlog: 1791178518, in_progress: 1791188155, ready: 1791187545 -->
+- CI 3: add .github/workflows/test.yml (push master, PRs, dispatch; contents read; PR concurrency cancel; ubuntu+macos, nvim stable via rhysd/action-setup-vim; submodule via webfactory/ssh-agent plus ENGINE_DEPLOY_KEY); needs CI 1, 2, 4 <!-- complexity: 2, in_progress: 1791188790, ready: 1791188172 -->
 
 
 

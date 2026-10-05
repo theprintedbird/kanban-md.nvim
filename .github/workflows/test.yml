@@ -1,0 +1,62 @@
+name: Tests
+
+on:
+  push:
+    branches: [master]
+  pull_request:
+  workflow_dispatch:
+
+# Nothing here writes to the repo, so the token gets no more than it needs.
+permissions:
+  contents: read
+
+# A new push to a PR supersedes the run already going for it. Pushes to master
+# are left to finish so every commit there gets a result.
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: ${{ github.event_name == 'pull_request' }}
+
+jobs:
+  test:
+    name: Tests (${{ matrix.os }})
+    runs-on: ${{ matrix.os }}
+    timeout-minutes: 10
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [ubuntu-latest, macos-latest]
+    steps:
+      - uses: actions/checkout@v7
+        # The engine submodule is private and its .gitmodules URL is SSH,
+        # which the checkout action's HTTPS token can't follow. It's fetched
+        # below once the deploy key is loaded.
+        with:
+          submodules: false
+
+      - name: Load the engine deploy key
+        # A read-only deploy key on kanban-md-engine. Loading it into an agent
+        # lets the SSH URL in .gitmodules stay as it is for local development.
+        uses: webfactory/ssh-agent@v0.10.0
+        with:
+          ssh-private-key: ${{ secrets.ENGINE_DEPLOY_KEY }}
+
+      - name: Fetch the engine submodule
+        run: git submodule update --init --recursive
+
+      - uses: rhysd/action-setup-vim@v1
+        with:
+          neovim: true
+          version: stable
+
+      - name: Neovim version
+        # Recorded so a red run can be matched to the Neovim that produced it.
+        run: nvim --version
+
+      - name: Run tests
+        # The cache lives under the runner's temp dir, so plenary is cloned
+        # fresh each run. It's pinned so an upstream change can't turn the
+        # suite red on its own.
+        env:
+          XDG_CACHE_HOME: ${{ runner.temp }}/cache
+          PLENARY_REF: v0.1.4
+        run: ./tests/run_tests.sh
