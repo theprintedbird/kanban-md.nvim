@@ -1,5 +1,9 @@
 -- tests/run_tests.lua
 -- Test runner for Kanban plugin tests
+--
+-- Run through tests/run_tests.sh, which sets KANBAN_PLENARY_PATH. Each spec
+-- runs in its own headless Neovim process. The runner quits with `cquit 1`
+-- if any spec fails or none are found, so the shell sees a non-zero status.
 
 -- Add the project root and submodule to Lua path so modules can be required
 local current_file = debug.getinfo(1, "S").source:sub(2)
@@ -7,33 +11,46 @@ local project_root = vim.fn.fnamemodify(current_file, ":p:h:h")
 local lib_path = project_root .. "/lib/kanban-md-engine/lua"
 package.path = lib_path .. "/?.lua;" .. lib_path .. "/?/init.lua;" .. package.path .. ";" .. project_root .. "/?.lua"
 
+local function finish(ok)
+  vim.cmd(ok and "qall!" or "cquit 1")
+end
+
 -- Require plenary test harness with error checking
 local plenary_success, plenary = pcall(require, "plenary.test_harness")
 if not plenary_success then
   print("ERROR: Could not load plenary.test_harness: " .. tostring(plenary))
-  return
+  return finish(false)
+end
+
+local plenary_path = os.getenv("KANBAN_PLENARY_PATH")
+if not plenary_path or plenary_path == "" then
+  print("ERROR: KANBAN_PLENARY_PATH is not set; run the tests through tests/run_tests.sh")
+  return finish(false)
 end
 
 -- Helper function to run a single test file in a separate Neovim process
-local function run_test_file(test_file, plenary_path, project_root)
+local function run_test_file(test_file)
   local test_name = vim.fn.fnamemodify(test_file, ":t")
+  local lib_root = project_root .. "/lib/kanban-md-engine"
 
-  -- Set up paths to include the engine submodule
-  -- Add both the lib directory and set package.path
-  local lib_path = vim.fn.fnamemodify(project_root .. "/lib/kanban-md-engine/lua", ":p")
-  local lib_root = vim.fn.fnamemodify(project_root .. "/lib/kanban-md-engine", ":p")
-
-  -- Build the command to run the test in a separate Neovim process
-  -- Add lib to runtime path AND set package.path
-  local cmd = string.format(
-    'nvim --headless --cmd "set rtp+=%s,\\"%s\\"" --cmd "set rtp+=\\"%s\\"" --cmd "lua package.path = \\"%s?.lua;%s?/init.lua;\\" .. package.path" -c "lua require(\'plenary.test_harness\').test_file(\'%s\')" -c "quit"',
+  -- The child gets plenary, the plugin and the engine on its runtimepath and
+  -- the engine on package.path. %q yields Lua string literals, so paths need
+  -- no further escaping inside the Lua chunks.
+  local setup = string.format(
+    "lua vim.opt.rtp:append(%q); vim.opt.rtp:append(%q); vim.opt.rtp:append(%q);"
+      .. " package.path = %q .. package.path",
     plenary_path,
     project_root,
     lib_root,
-    lib_path,
-    lib_path,
-    test_file
+    lib_path .. "/?.lua;" .. lib_path .. "/?/init.lua;"
   )
+  local run = string.format("lua require('plenary.test_harness').test_file(%q)", test_file)
+  local cmd = table.concat({
+    "nvim --headless",
+    "--cmd", vim.fn.shellescape(setup),
+    "-c", vim.fn.shellescape(run),
+    "-c quit",
+  }, " ")
 
   -- Execute the command and let output stream directly to terminal
   print("Running: " .. test_name)
@@ -49,27 +66,31 @@ local function run_test_file(test_file, plenary_path, project_root)
   }
 end
 
--- Get plenary path (same logic as in run_tests.sh)
-local xdg_cache = os.getenv("XDG_CACHE_HOME") or (os.getenv("HOME") .. "/Library/Caches")
-local plenary_path = xdg_cache .. "/kanban-md/plenary.nvim"
-
--- Function to find test files tagged with #neovim-only
+-- Find spec files tagged with #neovim-only, at any depth under dir_path.
+-- All other tests run via busted in standalone Lua in the engine repo.
 local function find_neovim_test_files(dir_path)
   local files = {}
-  -- Use grep to find files containing #neovim-only tag
-  local handle = io.popen('grep -l "#neovim-only" "' .. dir_path .. '"/**/*_spec.lua 2>/dev/null')
-  if handle then
-    for file in handle:lines() do
-      table.insert(files, file)
+  for _, file in ipairs(vim.fn.globpath(dir_path, "**/*_spec.lua", false, true)) do
+    local f = io.open(file, "r")
+    if f then
+      local content = f:read("*a")
+      f:close()
+      if content:find("#neovim-only", 1, true) then
+        table.insert(files, file)
+      end
     end
-    handle:close()
   end
+  table.sort(files)
   return files
 end
 
--- Find only Neovim-specific test files (tagged with #neovim-only)
--- All other tests now run via busted in standalone Lua
 local test_files = find_neovim_test_files(project_root .. "/tests")
+
+-- A broken discovery step must not pass vacuously.
+if #test_files == 0 then
+  print("ERROR: no spec files tagged #neovim-only found under " .. project_root .. "/tests")
+  return finish(false)
+end
 
 local results = {}
 local total_tests = #test_files
@@ -78,23 +99,14 @@ local passed_tests = 0
 for i, test_file in ipairs(test_files) do
   print("\n=== Running " .. vim.fn.fnamemodify(test_file, ":t") .. " (" .. i .. "/" .. total_tests .. ") ===\n")
 
-  if vim.fn.filereadable(test_file) == 1 then
-    local result = run_test_file(test_file, plenary_path, project_root)
-    table.insert(results, result)
+  local result = run_test_file(test_file)
+  table.insert(results, result)
 
-    if result.success then
-      print("✓ " .. result.name .. " passed")
-      passed_tests = passed_tests + 1
-    else
-      print("✗ " .. result.name .. " failed (exit code: " .. result.exit_code .. ")")
-    end
+  if result.success then
+    print("✓ " .. result.name .. " passed")
+    passed_tests = passed_tests + 1
   else
-    print("ERROR: Test file not found: " .. test_file)
-    table.insert(results, {
-      name = vim.fn.fnamemodify(test_file, ":t"),
-      exit_code = -1,
-      success = false
-    })
+    print("✗ " .. result.name .. " failed (exit code: " .. tostring(result.exit_code) .. ")")
   end
 
   print("Finished processing test file " .. i .. "/" .. total_tests)
@@ -118,3 +130,5 @@ if passed_tests == total_tests then
 else
   print(string.format("\n❌ %d test(s) failed", total_tests - passed_tests))
 end
+
+finish(passed_tests == total_tests)

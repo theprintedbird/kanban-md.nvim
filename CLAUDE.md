@@ -17,13 +17,15 @@ When starting work on a card, open a new `jj` change for it, and move the card t
 
 ```sh
 git submodule update --init      # engine must be present for anything to load
-./tests/run_tests.sh             # all plugin specs (zsh; clones plenary.nvim into $XDG_CACHE_HOME/kanban-md/ on first run)
+./tests/run_tests.sh             # all plugin specs; exits non-zero if any fail
 nvim --headless -c "PlenaryTestFile tests/integration/virtual_text_spec.lua" -c "quit"   # single spec
 ```
 
 There is no build or lint step.
 
-`tests/run_tests.lua` runs **only** spec files containing the tag `#neovim-only` (each in its own headless nvim process). A new spec without that tag in its `describe(...)` string is silently skipped. Each spec starts with `require('tests.test_helper')` to put the engine on `package.path`.
+`tests/run_tests.sh` is POSIX `sh`, so it runs on macOS and Linux. On first run it clones plenary.nvim into `${XDG_CACHE_HOME:-$HOME/.cache}/kanban-md/plenary.nvim`. Set `PLENARY_REF` to pin plenary to a tag or commit. The script exports that path as `KANBAN_PLENARY_PATH` and `tests/run_tests.lua` reads it, so it's defined only once. `run_tests.lua` must be started through the shell script.
+
+`tests/run_tests.lua` runs **only** spec files, at any depth under `tests/`, that contain the tag `#neovim-only` (each in its own headless nvim process). A new spec without that tag in its `describe(...)` string is silently skipped. If no tagged specs are found, the runner fails. Each spec starts with `require('tests.test_helper')` to put the engine on `package.path`.
 
 ## Architecture
 
