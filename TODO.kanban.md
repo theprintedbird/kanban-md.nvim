@@ -16,7 +16,6 @@
 
 ###### Ready
 
-- CI 8: add workflow linting: a .github/workflows/lint-workflows.yml (or a job beside Luacheck) running zizmor (zizmorcore/zizmor-action or pipx run zizmor .github/workflows; optionally upload SARIF to code scanning with security-events: write scoped to that job only) and actionlint (expression/type errors, shellcheck on run: blocks); trigger on changes to .github/**; needs CI 7 first or zizmor reports unpinned-uses and artipacked immediately; document the local commands in README and CLAUDE.md <!-- backlog: 1791196912, complexity: 1, depends_on: [card_01M463W89GYGCNB2JDZNAH7MQW], id: card_01M463W7X4S7JJ8DTRSY6KSHKA, ready: 1791207025 -->
 - CI 9: add .github/dependabot.yml: github-actions ecosystem, weekly, grouped into one PR, so the SHA pins from CI 7 do not go stale; optionally the gitsubmodule ecosystem for lib/kanban-md-engine so engine bumps arrive as tested PRs (check Dependabot can reach the private SSH submodule - may need a Dependabot secret or an HTTPS URL); needs CI 7 <!-- backlog: 1791196916, complexity: 1, depends_on: [card_01M463W89GYGCNB2JDZNAH7MQW], id: card_01M463W7NHDNT2GCTF2TBHHC5A, ready: 1791207028 -->
 
 
@@ -29,6 +28,7 @@
 
 
 ###### In Progress
+
 
 
 
@@ -60,3 +60,4 @@
 - tests/run_tests.sh passes the runner path to luafile unescaped, so a checkout path containing spaces breaks the test run <!-- backlog: 1791188866, complexity: 1, done: 1791191312, id: card_01M463W82CHV9AF4ZXEN2VQ7AJ, in_progress: 1791191200, ready: 1791191020 -->
 - Automatically create folds for each column <!-- backlog: 1791178495, complexity: 2, done: 1791191900, id: card_01M463W7Q8GKAA7Q78050Z4AW4, in_progress: 1791191764, ready: 1791191714 -->
 - CI 7: harden test.yml checkouts and action refs: pin every uses: to a full commit SHA with a "# vX.Y.Z" comment (actions/checkout, leafo/gh-actions-lua, leafo/gh-actions-luarocks, rhysd/action-setup-vim, webfactory/ssh-agent - ssh-agent matters most because it receives ENGINE_DEPLOY_KEY); add persist-credentials: false to both checkouts so GITHUB_TOKEN is not left in .git/config (the submodule fetch uses the SSH agent, so it is unaffected); verify with act using .actrc <!-- backlog: 1791196907, complexity: 1, done: 1791207404, id: card_01M463W89GYGCNB2JDZNAH7MQW, in_progress: 1791207140, ready: 1791207022 -->
+- CI 8: add workflow linting: a .github/workflows/lint-workflows.yml (or a job beside Luacheck) running zizmor (zizmorcore/zizmor-action or pipx run zizmor .github/workflows; optionally upload SARIF to code scanning with security-events: write scoped to that job only) and actionlint (expression/type errors, shellcheck on run: blocks); trigger on changes to .github/**; needs CI 7 first or zizmor reports unpinned-uses and artipacked immediately; document the local commands in README and CLAUDE.md <!-- backlog: 1791196912, complexity: 1, depends_on: [card_01M463W89GYGCNB2JDZNAH7MQW], done: 1791207577, id: card_01M463W7X4S7JJ8DTRSY6KSHKA, in_progress: 1791207410, ready: 1791207025 -->

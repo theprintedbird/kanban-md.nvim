@@ -242,3 +242,19 @@ To run the workflow locally with [act](https://github.com/nektos/act), which rea
 ```sh
 act -s ENGINE_DEPLOY_KEY="$(cat path/to/kanban-md-engine-deploy)"
 ```
+
+Every `uses:` is pinned to a full commit SHA, with the release tag in a trailing comment. Checkouts set `persist-credentials: false`, so the `GITHUB_TOKEN` isn't left in `.git/config`.
+
+`.github/workflows/lint-workflows.yml` runs when anything under `.github/` changes. It has two jobs:
+
+- **zizmor**, a security audit of the workflows (unpinned actions, template injection, excessive permissions, persisted credentials).
+- **actionlint**, which checks expressions and types and runs shellcheck over every `run:` block.
+
+To run the same checks locally:
+
+```sh
+zizmor .github
+actionlint
+```
+
+Or run that workflow under act with `act -W .github/workflows/lint-workflows.yml`, which needs no secrets.

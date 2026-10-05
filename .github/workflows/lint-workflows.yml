@@ -1,0 +1,59 @@
+name: Lint workflows
+
+# Only the workflows and Dependabot config are checked, so nothing else
+# needs to trigger a run.
+on:
+  push:
+    branches: [master]
+    paths: [".github/**"]
+  pull_request:
+    paths: [".github/**"]
+  workflow_dispatch:
+
+# Each job asks for what it needs.
+permissions: {}
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: ${{ github.event_name == 'pull_request' }}
+
+jobs:
+  zizmor:
+    name: zizmor
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    permissions:
+      contents: read
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+
+      - name: Audit workflows
+        # Run through pipx rather than zizmor-action, which starts its own
+        # container and so can't run under act. The token lets the online
+        # audits (impostor commits, known-vulnerable actions) query the API.
+        # Scoped to .github so a local run skips the engine submodule's
+        # workflows, which that repo lints itself.
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: pipx run zizmor==1.30.1 --format github .github
+
+  actionlint:
+    name: actionlint
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    permissions:
+      contents: read
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+
+      - name: Check workflows
+        # The image bundles shellcheck, which actionlint runs over every run:
+        # block. Dependabot doesn't bump docker:// refs, so update the tag and
+        # digest together by hand.
+        uses: docker://rhysd/actionlint:1.7.12@sha256:b1934ee5f1c509618f2508e6eb47ee0d3520686341fec936f3b79331f9315667
+        with:
+          args: -color
