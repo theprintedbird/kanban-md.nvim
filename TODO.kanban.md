@@ -3,7 +3,6 @@
 
 ###### Backlog
 
-- Automatically create folds for each column <!-- backlog: 1791178495 -->
 
 
 ###### Ready
@@ -16,7 +15,9 @@
 
 
 
+
 ###### In Progress
+
 
 
 
@@ -44,3 +45,4 @@
 - Set up Github workflows/actions for testing <!-- backlog: 1791178518, done: 1791190980, in_progress: 1791188155, ready: 1791187545 -->
 - Register the cursor positioning trigger (extras/cursor_triggers.lua) from the plugin; engine commit da82ced stopped wiring it, so tests/unit/cursor_positioning_spec.lua fails 6/9 <!-- backlog: 1791183130, complexity: 2, done: 1791191195, in_progress: 1791191135, ready: 1791191002 -->
 - tests/run_tests.sh passes the runner path to luafile unescaped, so a checkout path containing spaces breaks the test run <!-- backlog: 1791188866, complexity: 1, done: 1791191312, in_progress: 1791191200, ready: 1791191020 -->
+- Automatically create folds for each column <!-- backlog: 1791178495, complexity: 2, done: 1791191900, in_progress: 1791191764, ready: 1791191714 -->

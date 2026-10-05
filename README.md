@@ -118,6 +118,7 @@ If you already cloned without `--recurse-submodules`, run `git submodule update 
     │   ├── init.lua                    -- Neovim entry point (setup())
     │   ├── commands.lua                 -- user commands (:Kanban*)
     │   ├── detect.lua                   -- board detection (detection_strategy)
+    │   ├── fold.lua                     -- one fold per column
     │   ├── extras/
     │   │   └── cursor_triggers.lua      -- cursor positioning after moves
     │   └── adapters/
@@ -149,6 +150,18 @@ require('kanban-md').setup({
 })
 ```
 
+## Column Folds
+
+Each column in a `markdown.kanban` buffer gets its own fold, from its `######` heading to the line before the next heading of any level, so notes under H2–H5 headings stay outside the columns. A closed fold shows the heading and its card count, e.g. `###### Ready (3 cards)`. Use the usual fold commands: `za` toggles a column, `zM` closes them all, `zR` opens them all.
+
+Folding is set window-locally when the board is detected (`foldmethod=expr`). Columns start open, unless you have set `foldlevelstart`. The fold options are restored when the buffer stops being a board. To keep your own folding, turn it off:
+
+```lua
+require('kanban-md').setup({
+  fold_columns = false,
+})
+```
+
 ## Configuration
 
 Configuration is defined and validated by the engine (`kanban-md-engine`), but is typically set through this plugin's `setup()`:
@@ -165,6 +178,7 @@ require("kanban-md").setup({
   -- Display
   show_stats_virtual_text = true,
   show_cycle_time = true,
+  fold_columns = true, -- one fold per column (Neovim only)
 
   -- Automation
   auto_timestamp = true,

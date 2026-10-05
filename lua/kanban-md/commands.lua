@@ -7,6 +7,7 @@ local column_helper = require("kanban-md.helpers.column")
 local virtual_text = require("kanban-md.virtual_text")
 local adapter_registry = require("kanban-md.adapter_registry")
 local detect = require("kanban-md.detect")
+local fold = require("kanban-md.fold")
 local cursor_triggers = require("kanban-md.extras.cursor_triggers")
 
 local M = {}
@@ -1027,14 +1028,15 @@ function M.setup()
   -- stops the autocmds being registered twice
   local group = vim.api.nvim_create_augroup("KanbanMd", { clear = true })
 
-  -- Refresh virtual text in kanban buffers, identified by filetype
+  -- Refresh virtual text and fold the columns in kanban buffers, identified by filetype
   vim.api.nvim_create_autocmd("FileType", {
     group = group,
     pattern = detect.FILETYPE,
     callback = function(args)
       refresh_virtual_text(args.buf)
+      fold.attach(args.buf)
     end,
-    desc = "Update kanban virtual text when a board is detected"
+    desc = "Update kanban virtual text and folds when a board is detected"
   })
 
   vim.api.nvim_create_autocmd({"BufEnter", "BufWritePost"}, {
