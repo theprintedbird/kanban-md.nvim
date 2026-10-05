@@ -21,7 +21,7 @@ git submodule update --init      # engine must be present for anything to load
 nvim --headless -c "PlenaryTestFile tests/integration/virtual_text_spec.lua" -c "quit"   # single spec
 ```
 
-There is no build or lint step.
+There is no build step. Lint with `luacheck lua plugin ftdetect tests lazy.lua` (config in `.luacheckrc`; CI runs the same command).
 
 `tests/run_tests.sh` is POSIX `sh`, so it runs on macOS and Linux. On first run it clones plenary.nvim into `${XDG_CACHE_HOME:-$HOME/.cache}/kanban-md/plenary.nvim`. Set `PLENARY_REF` to pin plenary to a tag or commit. The script exports that path as `KANBAN_PLENARY_PATH` and `tests/run_tests.lua` reads it, so it's defined only once. `run_tests.lua` must be started through the shell script.
 

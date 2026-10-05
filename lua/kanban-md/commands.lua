@@ -149,15 +149,11 @@ end
 local function refresh_virtual_text(bufnr)
   local lines = get_adapter():read_buffer(bufnr)
   local board = Board:new()
-  local ok = pcall(function()
+  -- Errors are swallowed: don't spam users while a board is mid-edit
+  pcall(function()
     board:parse(lines)
     virtual_text.update_virtual_text(board, bufnr)
   end)
-
-  if not ok then
-    -- Silently fail - don't want to spam users with errors
-    -- while a board is mid-edit
-  end
 end
 
 -- Helper function to get user input
@@ -588,7 +584,7 @@ end
 
 -- Command: Set complexity on card at cursor
 function M.set_complexity()
-  local card, current_column, board = get_card_at_cursor()
+  local card = get_card_at_cursor()
 
   if not card then
     get_adapter():notify("No card found at cursor position", "warn")
@@ -780,7 +776,7 @@ end
 
 -- Command: Add dependency between two cards (two-step process)
 function M.add_dependency()
-  local card, column, board = get_card_at_cursor()
+  local card, column = get_card_at_cursor()
 
   if not card then
     get_adapter():notify("No card found at cursor position", "warn")
@@ -832,12 +828,10 @@ function M.add_dependency()
 
   -- Find the first card in the refreshed board
   local first_card_refreshed = nil
-  local first_column_refreshed = nil
   for _, col in ipairs(current_board.columns) do
     for _, c in ipairs(col.cards) do
       if c.properties.id == dependency_state.first_card.properties.id then
         first_card_refreshed = c
-        first_column_refreshed = col
         break
       end
     end
@@ -849,7 +843,6 @@ function M.add_dependency()
     for _, c in ipairs(current_board.archive.cards) do
       if c.properties.id == dependency_state.first_card.properties.id then
         first_card_refreshed = c
-        first_column_refreshed = current_board.archive
         break
       end
     end

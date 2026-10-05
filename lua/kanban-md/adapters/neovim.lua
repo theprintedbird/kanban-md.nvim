@@ -35,7 +35,7 @@ local NeovimAdapter = Adapter.new({
 	-- Write array of strings to buffer/file
 	write_buffer = function(self, lines, opts)
 		opts = opts or {}
-		local bufnr = opts.bufnr or get_current_buffer()
+		local bufnr = opts.bufnr or self.get_current_buffer()
 		local start = opts.start or 0
 		local _end = opts._end or -1
 		local strict_indexing = false
