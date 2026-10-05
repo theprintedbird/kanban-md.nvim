@@ -6,7 +6,7 @@
 local current_file = debug.getinfo(1, "S").source:sub(2)
 local test_dir = vim.fn.fnamemodify(current_file, ":p:h")
 local project_root = vim.fn.fnamemodify(test_dir, ":h")
-local lib_path = project_root .. "/lib/kanban-md/lua"
+local lib_path = project_root .. "/lib/kanban-md-engine/lua"
 
 -- Add submodule to package path
 package.path = lib_path .. "/?.lua;" .. lib_path .. "/?/init.lua;" .. package.path
