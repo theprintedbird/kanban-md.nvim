@@ -1,0 +1,21 @@
+version: 2
+
+updates:
+  # Keeps the commit-SHA pins in .github/workflows current. Dependabot
+  # rewrites the trailing "# vX.Y.Z" comment along with the SHA.
+  #
+  # The engine submodule is left out: Dependabot can't use the SSH deploy key
+  # CI fetches it with, so engine bumps stay manual.
+  - package-ecosystem: github-actions
+    directory: /
+    schedule:
+      interval: weekly
+    # A release has a few days to be yanked or flagged before it's proposed.
+    cooldown:
+      default-days: 7
+    # One PR a week for every action, rather than one per action.
+    groups:
+      github-actions:
+        patterns: ["*"]
+    commit-message:
+      prefix: "ci"

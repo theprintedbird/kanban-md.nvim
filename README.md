@@ -243,7 +243,7 @@ To run the workflow locally with [act](https://github.com/nektos/act), which rea
 act -s ENGINE_DEPLOY_KEY="$(cat path/to/kanban-md-engine-deploy)"
 ```
 
-Every `uses:` is pinned to a full commit SHA, with the release tag in a trailing comment. Checkouts set `persist-credentials: false`, so the `GITHUB_TOKEN` isn't left in `.git/config`.
+Every `uses:` is pinned to a full commit SHA, with the release tag in a trailing comment. Checkouts set `persist-credentials: false`, so the `GITHUB_TOKEN` isn't left in `.git/config`. Dependabot (`.github/dependabot.yml`) opens one grouped PR a week to bump the pins, skipping releases less than 7 days old. It doesn't track the engine submodule, because it can't use the SSH deploy key, so engine bumps are done by hand.
 
 `.github/workflows/lint-workflows.yml` runs when anything under `.github/` changes. It has two jobs:
 

@@ -4,38 +4,25 @@
 
 ###### Backlog
 
-- CI 10: Neovim version matrix: add an nvim axis to the test job with stable, nightly (continue-on-error so upstream breakage shows without blocking) and a minimum supported version; first decide and document that minimum in README (vim.fs, vim.filetype.add and extmark APIs set the floor); keep ubuntu+macos, or run nightly on ubuntu only to save minutes; include the nvim version in the job name <!-- backlog: 1791196920, complexity: 2, id: card_01M463W7WXTXP4XHE4GJN5Y7XH -->
 - CI 11: handle fork PRs: they do not receive ENGINE_DEPLOY_KEY, so the test job fails at webfactory/ssh-agent; either skip the submodule and test steps with a clear notice when the secret is empty (job env HAS_KEY from secrets.ENGINE_DEPLOY_KEY != empty string, steps gated on it) or state in README/CONTRIBUTING that fork PRs are not accepted; do NOT switch to pull_request_target, which would expose the key to untrusted code <!-- backlog: 1791196924, complexity: 1, id: card_01M463W7NF3P338WCKC9VTDED1 -->
 - CI 12: pin the luacheck version in the lint job (luarocks install luacheck <ver>) so a new upstream release cannot turn lint red with no code change; take the version from the engine rockspec test_dependencies so both repos agree <!-- backlog: 1791196928, complexity: 1, id: card_01M463W8D4K484ZGNCEES8DSKJ -->
 - CI 13 (optional): StyLua format check: add stylua.toml matching the engine (or agree a config if the engine has none), one-off format commit over lua plugin ftdetect tests lazy.lua, then a stylua --check step (JohnnyMorganz/stylua-action, SHA-pinned) in the lint job; mention the command in CLAUDE.md <!-- backlog: 1791196932, complexity: 1, id: card_01M463W8FEZTVFA56QX9AYPQ62 -->
 - CI 14 (optional): vimdoc and help check: there is no doc/ directory, so :help kanban-md does not exist; write doc/kanban-md.txt (by hand or generated from README with panvimdoc), then add a CI step running nvim --headless -c "helptags doc" -c q that fails on duplicate or bad tags; if panvimdoc is used, also regenerate and fail when it differs from the committed file <!-- backlog: 1791196936, complexity: 2, id: card_01M463W8GGZDDD2GJAK4D5RET3 -->
-- CI 15 (engine repo - do the work there, not here): apply the same hardening to lib/kanban-md-engine/.github/workflows/ci.yml: top-level permissions: contents: read, timeout-minutes per job, a concurrency group cancelling superseded PR runs, plus the CI 7-9 changes (SHA pins, persist-credentials: false, zizmor + actionlint, dependabot.yml); note actions/upload-artifact@v4 lags the other actions <!-- backlog: 1791196940, complexity: 3, id: card_01M463W7QTYJRCEKNJEM4QG892 -->
+- CI 15 (engine repo - do the work there, not here): apply the same hardening to lib/kanban-md-engine/.github/workflows/ci.yml: top-level permissions: contents: read, timeout-minutes per job, a concurrency group cancelling superseded PR runs, plus the CI 7-9 changes (SHA pins, persist-credentials: false, zizmor + actionlint, dependabot.yml); note actions/upload-artifact@v4 lags the other actions; zizmor --persona pedantic currently reports 7 unpinned-uses, 2 artipacked, 3 excessive-permissions, concurrency-limits, and a template-injection from ${{ matrix.lua }} in the busted run: block (pass it through env: instead); verify with zizmor .github and actionlint, then bump the submodule here <!-- backlog: 1791196940, complexity: 3, id: card_01M463W7QTYJRCEKNJEM4QG892 -->
 - CI 16 (optional, low priority): typos/codespell check and a markdown link check on README.md and SPEC links; once versions are tagged, consider release automation (release-please, a luarocks rockspec and upload, CHANGELOG) <!-- backlog: 1791196944, complexity: 1, id: card_01M463W7TAVKYSJWT0Y8D3SV1V -->
+- Make the "new card" text box centred in the screen, and larger. <!-- backlog: 1791250669, id: card_01M47DR8ARJX5MFFMGD1TK9XGP -->
+- Moving several cards at once between columns <!-- backlog: 1791250713, id: card_01M47DSJT99H34N2A35KEVVXSF -->
+- Remove the extra keypress needed when adding a dependency  <!-- backlog: 1791250744, id: card_01M47DTGW3QV7D2V77A8HMHMYZ -->
 
 
 
 ###### Ready
 
-- CI 9: add .github/dependabot.yml: github-actions ecosystem, weekly, grouped into one PR, so the SHA pins from CI 7 do not go stale; optionally the gitsubmodule ecosystem for lib/kanban-md-engine so engine bumps arrive as tested PRs (check Dependabot can reach the private SSH submodule - may need a Dependabot secret or an HTTPS URL); needs CI 7 <!-- backlog: 1791196916, complexity: 1, depends_on: [card_01M463W89GYGCNB2JDZNAH7MQW], id: card_01M463W7NHDNT2GCTF2TBHHC5A, ready: 1791207028 -->
-
-
-
-
-
-
-
+- CI 10: Neovim version matrix: add an nvim axis to the test job with stable, nightly (continue-on-error so upstream breakage shows without blocking) and a minimum supported version; first decide and document that minimum in README (vim.fs, vim.filetype.add and extmark APIs set the floor); keep ubuntu+macos, or run nightly on ubuntu only to save minutes; include the nvim version in the job name <!-- backlog: 1791196920, complexity: 2, id: card_01M463W7WXTXP4XHE4GJN5Y7XH, ready: 1791250367 -->
 
 
 
 ###### In Progress
-
-
-
-
-
-
-
-
 
 
 
@@ -61,3 +48,4 @@
 - Automatically create folds for each column <!-- backlog: 1791178495, complexity: 2, done: 1791191900, id: card_01M463W7Q8GKAA7Q78050Z4AW4, in_progress: 1791191764, ready: 1791191714 -->
 - CI 7: harden test.yml checkouts and action refs: pin every uses: to a full commit SHA with a "# vX.Y.Z" comment (actions/checkout, leafo/gh-actions-lua, leafo/gh-actions-luarocks, rhysd/action-setup-vim, webfactory/ssh-agent - ssh-agent matters most because it receives ENGINE_DEPLOY_KEY); add persist-credentials: false to both checkouts so GITHUB_TOKEN is not left in .git/config (the submodule fetch uses the SSH agent, so it is unaffected); verify with act using .actrc <!-- backlog: 1791196907, complexity: 1, done: 1791207404, id: card_01M463W89GYGCNB2JDZNAH7MQW, in_progress: 1791207140, ready: 1791207022 -->
 - CI 8: add workflow linting: a .github/workflows/lint-workflows.yml (or a job beside Luacheck) running zizmor (zizmorcore/zizmor-action or pipx run zizmor .github/workflows; optionally upload SARIF to code scanning with security-events: write scoped to that job only) and actionlint (expression/type errors, shellcheck on run: blocks); trigger on changes to .github/**; needs CI 7 first or zizmor reports unpinned-uses and artipacked immediately; document the local commands in README and CLAUDE.md <!-- backlog: 1791196912, complexity: 1, depends_on: [card_01M463W89GYGCNB2JDZNAH7MQW], done: 1791207577, id: card_01M463W7X4S7JJ8DTRSY6KSHKA, in_progress: 1791207410, ready: 1791207025 -->
+- CI 9: add .github/dependabot.yml: github-actions ecosystem, weekly, grouped into one PR, so the SHA pins from CI 7 do not go stale; optionally the gitsubmodule ecosystem for lib/kanban-md-engine so engine bumps arrive as tested PRs (check Dependabot can reach the private SSH submodule - may need a Dependabot secret or an HTTPS URL); needs CI 7 <!-- backlog: 1791196916, complexity: 1, depends_on: [card_01M463W89GYGCNB2JDZNAH7MQW], done: 1791207632, id: card_01M463W7NHDNT2GCTF2TBHHC5A, in_progress: 1791207583, ready: 1791207028 -->
