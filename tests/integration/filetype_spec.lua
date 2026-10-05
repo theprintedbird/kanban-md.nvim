@@ -89,4 +89,25 @@ describe("filetype detection #neovim-only", function()
     vim.cmd("silent write")
     assert.equals(detect.FILETYPE, vim.bo[buf].filetype)
   end)
+
+  it("writes the marker on :KanbanNewBoard so the file is detected when reopened", function()
+    local original_input = vim.ui.input
+    vim.ui.input = function(_, callback) callback("Test Board") end
+
+    local buf = open("marked.md", { "" })
+    local path = vim.api.nvim_buf_get_name(buf)
+
+    local ok, err = pcall(vim.cmd, "KanbanNewBoard")
+    vim.ui.input = original_input
+    assert(ok, err)
+
+    assert.equals(detect.MARKER, vim.api.nvim_buf_get_lines(buf, 0, 1, false)[1])
+    vim.cmd("silent write")
+
+    -- A fresh buffer has no kanban_md_board flag, so only the marker can match
+    vim.cmd("bwipeout!")
+    vim.cmd("edit " .. vim.fn.fnameescape(path))
+    assert.equals(detect.FILETYPE, vim.bo.filetype)
+    assert.is_nil(vim.b.kanban_md_board)
+  end)
 end)

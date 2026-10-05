@@ -130,7 +130,7 @@ Markdown buffers that are kanban boards get the compound filetype **`markdown.ka
 These buffers get the filetype:
 
 - Files with a `.kanban.md` extension, always.
-- Buffers where `:KanbanNewBoard` is run.
+- Buffers where `:KanbanNewBoard` is run. It also writes the `<!-- kanban-board -->` marker as the first line, so the file is still recognised when you reopen it under the `"marker"` and `"both"` strategies.
 - Other markdown files that the `detection_strategy` config option accepts:
   - **`"marker"`** (default) - Requires an explicit `<!-- kanban-board -->` comment in the first 10 lines. Invisible in rendered markdown, and prevents accidental parsing of ordinary docs.
   - **`"extension"`** - Only files with a `.kanban.md` extension.

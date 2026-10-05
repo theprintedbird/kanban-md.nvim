@@ -6,6 +6,7 @@
 local M = {}
 
 M.FILETYPE = "markdown.kanban"
+M.MARKER = "<!-- kanban-board -->"
 
 local MARKER_PATTERN = "<!%-%-%s*kanban%-board%s*%-%->"
 

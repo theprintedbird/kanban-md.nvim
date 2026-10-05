@@ -277,11 +277,18 @@ function M.new_board()
       board:add_column("col_" .. col_name:lower():gsub("%s+", "_"), col_name)
     end
 
+    -- Put the detection marker above the title. The parser keeps it as
+    -- markdown, so later commands write it back.
+    local lines = board:write()
+    table.insert(lines, 1, detect.MARKER)
+    board = Board:new()
+    board:parse(lines)
+
     -- Clear current buffer and set new board content
     update_buffer_with_board(board)
 
-    -- The writer doesn't emit the <!-- kanban-board --> marker, so flag the
-    -- buffer to keep the filetype when it is saved
+    -- The marker only counts under the "marker"/"both" strategies, so also
+    -- flag the buffer to keep the filetype when it is saved
     local bufnr = vim.api.nvim_get_current_buf()
     vim.b[bufnr].kanban_md_board = true
     if vim.bo[bufnr].filetype ~= detect.FILETYPE then
