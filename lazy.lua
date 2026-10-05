@@ -4,7 +4,7 @@
 return {
   "theprintedbird/kanban-md.nvim",
   lazy = true,
-  ft = "markdown",
+  ft = { "markdown", "markdown.kanban" },
   submodules = true, -- lazy.nvim will fetch lib/kanban-md-engine for you
   config = function()
     require('kanban-md').setup()

@@ -30,7 +30,7 @@ There is no build or lint step.
 
 The plugin (`lua/kanban-md/`) and the engine (`lib/kanban-md-engine/lua/kanban-md/`) use the **same module namespace**. `require('kanban-md.board')` resolves to the engine; `require('kanban-md.commands')` resolves to the plugin. The engine is made reachable by prepending `lib/kanban-md-engine/lua` to `package.path`, a step repeated in `plugin/kanban-md.lua`, `lua/kanban-md/init.lua`, `tests/test_helper.lua` and `tests/run_tests.lua`. If the submodule path changes, update all four.
 
-No module may exist in both trees. Neovim's runtimepath loader runs before the `package.path` searcher, so a plugin copy would silently shadow the engine's. `virtual_text.lua`, `adapters/interface.lua`, `adapters/cli.lua` and the stock `extras/*_triggers.lua` live only in the engine. The plugin owns only `commands.lua`, `init.lua`, `adapters/neovim.lua` and `extras/cursor_triggers.lua`.
+No module may exist in both trees. Neovim's runtimepath loader runs before the `package.path` searcher, so a plugin copy would silently shadow the engine's. `virtual_text.lua`, `adapters/interface.lua`, `adapters/cli.lua` and the stock `extras/*_triggers.lua` live only in the engine. The plugin owns only `commands.lua`, `detect.lua`, `init.lua`, `adapters/neovim.lua` and `extras/cursor_triggers.lua`.
 
 ### Load / setup flow
 
@@ -47,4 +47,4 @@ Each command reads the whole buffer through the adapter, parses it into a fresh 
 
 ### Board detection
 
-`detection_strategy` config (`"marker"` default: `<!-- kanban-board -->` in the first 10 lines; `"extension"`: `*.kanban.md`; `"both"`; `"auto"`: legacy, any H6 header) decides which markdown buffers are treated as boards and get virtual text.
+Boards get the compound filetype `markdown.kanban`, set by `ftdetect/kanban-md.lua` through `lua/kanban-md/detect.lua`. Virtual text autocmds key off that filetype. `*.kanban.md` files always qualify, `:KanbanNewBoard` sets it (with the `vim.b.kanban_md_board` flag so a save doesn't drop it), and other markdown files go by `detection_strategy` (`"marker"` default: `<!-- kanban-board -->` in the first 10 lines; `"extension"`: `*.kanban.md` only; `"both"`; `"auto"`: legacy, any H6 header). Detection runs again on `BufWritePost`.

@@ -50,7 +50,7 @@ kanban-md.nvim depends on `kanban-md-engine`, included as a git submodule at `li
 {
   "theprintedbird/kanban-md.nvim",
   lazy = true,
-  ft = "markdown",
+  ft = { "markdown", "markdown.kanban" },
   submodules = true, -- lazy.nvim will fetch lib/kanban-md-engine for you
   config = function()
     require('kanban-md').setup({
@@ -108,11 +108,14 @@ If you already cloned without `--recurse-submodules`, run `git submodule update 
 
     kanban-md.nvim
     ├── lazy.lua                       -- lazy.nvim plugin spec
+    ├── ftdetect/
+    │   └── kanban-md.lua               -- sets the markdown.kanban filetype
     ├── plugin/
     │   └── kanban-md.lua               -- registers commands on load
     ├── lua/kanban-md/
     │   ├── init.lua                    -- Neovim entry point (setup())
     │   ├── commands.lua                 -- user commands (:Kanban*)
+    │   ├── detect.lua                   -- board detection (detection_strategy)
     │   ├── extras/
     │   │   └── cursor_triggers.lua      -- cursor positioning after moves
     │   └── adapters/
@@ -122,12 +125,21 @@ If you already cloned without `--recurse-submodules`, run `git submodule update 
 
 ## Board Detection
 
-kanban-md.nvim scans markdown buffers to decide whether to parse them as boards and attach virtual text. This is controlled by the `detection_strategy` config option:
+Markdown buffers that are kanban boards get the compound filetype **`markdown.kanban`**. Neovim loads everything for `markdown` first (ftplugin, syntax, treesitter), then anything for `kanban`. Virtual text is shown in `markdown.kanban` buffers. You can add your own board settings in `ftplugin/markdown.kanban.lua` or with a `FileType markdown.kanban` autocmd.
 
-- **`"marker"`** (default) - Requires an explicit `<!-- kanban-board -->` comment in the first 10 lines. Invisible in rendered markdown, and prevents accidental parsing of ordinary docs.
-- **`"extension"`** - Only parses files with a `.kanban.md` extension.
-- **`"both"`** - Accepts either the marker or the `.kanban.md` extension.
-- **`"auto"`** - Legacy: detects any file containing H6 headers (`######`). May parse unintended files.
+These buffers get the filetype:
+
+- Files with a `.kanban.md` extension, always.
+- Buffers where `:KanbanNewBoard` is run.
+- Other markdown files that the `detection_strategy` config option accepts:
+  - **`"marker"`** (default) - Requires an explicit `<!-- kanban-board -->` comment in the first 10 lines. Invisible in rendered markdown, and prevents accidental parsing of ordinary docs.
+  - **`"extension"`** - Only files with a `.kanban.md` extension.
+  - **`"both"`** - Either the marker or the `.kanban.md` extension.
+  - **`"auto"`** - Legacy: any file containing H6 headers (`######`). May match unintended files, and scans the whole of every markdown file that isn't a board.
+
+Detection runs when a file is opened, and again each time it is written, so adding or removing the marker changes the filetype on the next `:w`.
+
+If you lazy-load the plugin by filetype, include both: `ft = { "markdown", "markdown.kanban" }`.
 
 ```lua
 require('kanban-md').setup({

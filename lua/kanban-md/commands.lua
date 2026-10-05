@@ -6,6 +6,7 @@ local config = require("kanban-md.config")
 local column_helper = require("kanban-md.helpers.column")
 local virtual_text = require("kanban-md.virtual_text")
 local adapter_registry = require("kanban-md.adapter_registry")
+local detect = require("kanban-md.detect")
 
 local M = {}
 
@@ -144,6 +145,21 @@ local function update_buffer_with_board(board, bufnr)
   virtual_text.update_virtual_text(fresh_board, bufnr)
 end
 
+-- Helper function to redraw virtual text for a kanban buffer
+local function refresh_virtual_text(bufnr)
+  local lines = get_adapter():read_buffer(bufnr)
+  local board = Board:new()
+  local ok = pcall(function()
+    board:parse(lines)
+    virtual_text.update_virtual_text(board, bufnr)
+  end)
+
+  if not ok then
+    -- Silently fail - don't want to spam users with errors
+    -- while a board is mid-edit
+  end
+end
+
 -- Helper function to get user input
 local function get_input(prompt, default, callback)
   get_adapter():prompt_input(prompt, default or "", function(result)
@@ -263,6 +279,15 @@ function M.new_board()
 
     -- Clear current buffer and set new board content
     update_buffer_with_board(board)
+
+    -- The writer doesn't emit the <!-- kanban-board --> marker, so flag the
+    -- buffer to keep the filetype when it is saved
+    local bufnr = vim.api.nvim_get_current_buf()
+    vim.b[bufnr].kanban_md_board = true
+    if vim.bo[bufnr].filetype ~= detect.FILETYPE then
+      vim.bo[bufnr].filetype = detect.FILETYPE
+    end
+
     get_adapter():notify("Created new kanban board: " .. title, "info")
   end)
 end
@@ -996,82 +1021,48 @@ function M.setup()
     })
   end
 
-  -- Setup autocmd to refresh virtual text when entering kanban buffers
-  vim.api.nvim_create_autocmd({"BufEnter", "BufWritePost"}, {
-    pattern = "*.md",
+  -- setup() runs from plugin/ and again from init.setup(); clearing the group
+  -- stops the autocmds being registered twice
+  local group = vim.api.nvim_create_augroup("KanbanMd", { clear = true })
+
+  -- Refresh virtual text in kanban buffers, identified by filetype
+  vim.api.nvim_create_autocmd("FileType", {
+    group = group,
+    pattern = detect.FILETYPE,
     callback = function(args)
-      local bufnr = args.buf
-      local lines = get_adapter():read_buffer(bufnr)
+      refresh_virtual_text(args.buf)
+    end,
+    desc = "Update kanban virtual text when a board is detected"
+  })
 
-      -- Quick check: does this look like a kanban board?
-      local is_kanban = false
-      local strategy = config.get_value("detection_strategy")
-
-      -- Handle legacy config option for backwards compatibility
-      if not strategy or strategy == "" then
-        local require_marker = config.get_value("require_kanban_marker")
-        if require_marker == true then
-          strategy = "marker"
-        elseif require_marker == false then
-          strategy = "auto"
-        else
-          strategy = "marker" -- default
-        end
-      end
-
-      -- Get buffer name for extension checking
-      local bufname = get_adapter():get_buffer_name(bufnr)
-      local has_kanban_extension = bufname and bufname:match("%.kanban%.md$") ~= nil
-
-      if strategy == "marker" then
-        -- Look for explicit <!-- kanban-board --> marker in first 10 lines
-        for i = 1, math.min(10, #lines) do
-          if lines[i]:match("<!%-%-%s*kanban%-board%s*%-%->") then
-            is_kanban = true
-            break
-          end
-        end
-      elseif strategy == "extension" then
-        -- Only parse files with .kanban.md extension
-        is_kanban = has_kanban_extension
-      elseif strategy == "both" then
-        -- Accept either marker OR .kanban.md extension
-        if has_kanban_extension then
-          is_kanban = true
-        else
-          -- Check for marker
-          for i = 1, math.min(10, #lines) do
-            if lines[i]:match("<!%-%-%s*kanban%-board%s*%-%->") then
-              is_kanban = true
-              break
-            end
-          end
-        end
-      elseif strategy == "auto" then
-        -- Legacy behaviour: Look for H6 headers (######) which are used for columns
-        for _, line in ipairs(lines) do
-          if line:match("^######%s+") then
-            is_kanban = true
-            break
-          end
-        end
-      end
-
-      if is_kanban then
-        -- Parse and update virtual text
-        local board = Board:new()
-        local ok, err = pcall(function()
-          board:parse(lines)
-          virtual_text.update_virtual_text(board, bufnr)
-        end)
-
-        if not ok then
-          -- Silently fail - don't want to spam users with errors
-          -- on non-kanban markdown files
-        end
+  vim.api.nvim_create_autocmd({"BufEnter", "BufWritePost"}, {
+    group = group,
+    callback = function(args)
+      if vim.bo[args.buf].filetype == detect.FILETYPE then
+        refresh_virtual_text(args.buf)
       end
     end,
     desc = "Update kanban virtual text on buffer enter"
+  })
+
+  -- Re-run detection on write, so adding or removing the marker changes the filetype.
+  -- Registered after the refresh autocmd, so a downgrade clears what it just drew.
+  vim.api.nvim_create_autocmd("BufWritePost", {
+    group = group,
+    pattern = {"*.md", "*.markdown"},
+    callback = function(args)
+      local bufnr = args.buf
+      local is_board = detect.is_board(bufnr) or vim.b[bufnr].kanban_md_board == true
+      local filetype = vim.bo[bufnr].filetype
+
+      if is_board and filetype ~= detect.FILETYPE then
+        vim.bo[bufnr].filetype = detect.FILETYPE
+      elseif not is_board and filetype == detect.FILETYPE then
+        vim.bo[bufnr].filetype = "markdown"
+        get_adapter():clear_namespace(bufnr, get_adapter():create_namespace("kanban_md_virtual_text"))
+      end
+    end,
+    desc = "Update kanban filetype on write"
   })
 end
 
