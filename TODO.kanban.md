@@ -3,6 +3,10 @@
 
 ###### Backlog
 
+- Set up a custom filetype <!-- backlog: 1791178471 -->
+- Automatically create folds for each column <!-- backlog: 1791178495 -->
+- Set up Github workflows/actions for testing <!-- backlog: 1791178518 -->
+
 
 ###### Ready
 
