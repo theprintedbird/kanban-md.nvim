@@ -22,9 +22,9 @@ This plugin uses an **adapter pattern** to keep the engine platform-agnostic:
 ┌─────────────────────────────────────────┐
 │   kanban-md.nvim (this repo)             │  Commands, keymaps, virtual text
 │   lua/kanban-md/commands.lua              │
-│   lua/kanban-md/virtual_text.lua          │
+│   lua/kanban-md/adapters/neovim.lua       │
 ├─────────────────────────────────────────┤
-│   Adapter Interface (Strategy Pattern)    │  lua/kanban-md/adapters/
+│   Adapter Interface (Strategy Pattern)    │  engine: kanban-md.adapters.interface
 │   - notify() / read_buffer() / write_buffer()
 │   - prompt_input() / prompt_select()
 │   - cursor & extmark operations
@@ -37,12 +37,9 @@ This plugin uses an **adapter pattern** to keep the engine platform-agnostic:
 
 The engine is buffer-agnostic: every command re-parses the current buffer into a `Board` object, mutates it, and writes it back on success. On error, nothing is written and Neovim's native undo (`u`) handles the rest — see the engine repo for details on that model.
 
-Two adapters ship in this repo:
+This repo ships one adapter, **`lua/kanban-md/adapters/neovim.lua`**, backed by `vim.*` APIs. The adapter contract (`adapters/interface.lua`), a plain stdin/stdout adapter (`adapters/cli.lua`), the virtual-text renderer (`virtual_text.lua`) and the stock triggers (`extras/*_triggers.lua`) all live in the engine. Only `extras/cursor_triggers.lua` is plugin-specific.
 
-- **`lua/kanban-md/adapters/neovim.lua`** – used by the plugin, backed by `vim.*` APIs.
-- **`lua/kanban-md/adapters/cli.lua`** – a plain stdin/stdout adapter, useful for exercising the engine outside of Neovim.
-
-See `lua/kanban-md/adapters/README.md` for the full adapter interface and how to implement your own.
+See `lib/kanban-md-engine/lua/kanban-md/adapters/README.md` for the full adapter interface and how to implement your own.
 
 ## Installation
 
@@ -116,12 +113,10 @@ If you already cloned without `--recurse-submodules`, run `git submodule update 
     ├── lua/kanban-md/
     │   ├── init.lua                    -- Neovim entry point (setup())
     │   ├── commands.lua                 -- user commands (:Kanban*)
-    │   ├── virtual_text.lua             -- WIP/cycle-time virtual text
+    │   ├── extras/
+    │   │   └── cursor_triggers.lua      -- cursor positioning after moves
     │   └── adapters/
-    │       ├── interface.lua            -- adapter contract + validation
-    │       ├── neovim.lua               -- Neovim adapter
-    │       ├── cli.lua                  -- CLI adapter
-    │       └── README.md                -- adapter docs
+    │       └── neovim.lua               -- Neovim adapter
     ├── lib/kanban-md-engine/                  -- kanban-md-engine (git submodule)
     └── tests/                          -- plenary.nvim specs for this plugin
 

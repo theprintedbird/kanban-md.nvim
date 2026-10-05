@@ -4,7 +4,7 @@
 -- Add the project root and submodule to Lua path so modules can be required
 local current_file = debug.getinfo(1, "S").source:sub(2)
 local project_root = vim.fn.fnamemodify(current_file, ":p:h:h")
-local lib_path = project_root .. "/lib/kanban-md/lua"
+local lib_path = project_root .. "/lib/kanban-md-engine/lua"
 package.path = lib_path .. "/?.lua;" .. lib_path .. "/?/init.lua;" .. package.path .. ";" .. project_root .. "/?.lua"
 
 -- Require plenary test harness with error checking
@@ -20,8 +20,8 @@ local function run_test_file(test_file, plenary_path, project_root)
 
   -- Set up paths to include the engine submodule
   -- Add both the lib directory and set package.path
-  local lib_path = vim.fn.fnamemodify(project_root .. "/lib/kanban-md/lua", ":p")
-  local lib_root = vim.fn.fnamemodify(project_root .. "/lib/kanban-md", ":p")
+  local lib_path = vim.fn.fnamemodify(project_root .. "/lib/kanban-md-engine/lua", ":p")
+  local lib_root = vim.fn.fnamemodify(project_root .. "/lib/kanban-md-engine", ":p")
 
   -- Build the command to run the test in a separate Neovim process
   -- Add lib to runtime path AND set package.path

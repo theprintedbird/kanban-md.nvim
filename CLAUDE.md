@@ -28,9 +28,9 @@ There is no build or lint step.
 
 ### Shared `kanban-md.*` Lua namespace
 
-The plugin (`lua/kanban-md/`) and the engine (`lib/kanban-md-engine/lua/kanban-md/`) use the **same module namespace**. `require('kanban-md.board')` resolves to the engine; `require('kanban-md.commands')` resolves to the plugin. The engine is made reachable by prepending `lib/kanban-md-engine/lua` to `package.path`, a step repeated in `plugin/kanban-md.lua`, `lua/kanban-md/init.lua`, `tests/test_helper.lua` and `tests/run_tests.lua`. If the submodule path changes, update all four. (`run_tests.lua` still points at the old `lib/kanban-md` path.)
+The plugin (`lua/kanban-md/`) and the engine (`lib/kanban-md-engine/lua/kanban-md/`) use the **same module namespace**. `require('kanban-md.board')` resolves to the engine; `require('kanban-md.commands')` resolves to the plugin. The engine is made reachable by prepending `lib/kanban-md-engine/lua` to `package.path`, a step repeated in `plugin/kanban-md.lua`, `lua/kanban-md/init.lua`, `tests/test_helper.lua` and `tests/run_tests.lua`. If the submodule path changes, update all four.
 
-Some files exist in both trees (`extras/id_triggers.lua`, `extras/*_triggers.lua`, `adapters/cli.lua`, `adapters/interface.lua`, `virtual_text.lua`) and some have diverged. Neovim's runtimepath loader runs before the `package.path` searcher, so inside Neovim the plugin's copy wins. Check which copy you are editing, and whether the change belongs in the engine instead.
+No module may exist in both trees. Neovim's runtimepath loader runs before the `package.path` searcher, so a plugin copy would silently shadow the engine's. `virtual_text.lua`, `adapters/interface.lua`, `adapters/cli.lua` and the stock `extras/*_triggers.lua` live only in the engine. The plugin owns only `commands.lua`, `init.lua`, `adapters/neovim.lua` and `extras/cursor_triggers.lua`.
 
 ### Load / setup flow
 
@@ -39,7 +39,7 @@ Some files exist in both trees (`extras/id_triggers.lua`, `extras/*_triggers.lua
 
 ### Adapter pattern
 
-The engine never calls `vim.*` directly. It goes through an adapter fetched from the engine's `kanban-md.adapter_registry` (`get_adapter()` / `set_adapter()`). `lua/kanban-md/adapters/neovim.lua` returns an **already-instantiated** adapter, so don't call `.new()` on it. The contract (required: `notify`, `read_buffer`, `write_buffer`, `get_cursor`, `set_cursor`, `prompt_input`, `prompt_select`; optional: the virtual-text/extmark methods) is in `adapters/interface.lua` and `adapters/README.md`. Tests swap in a mock with `adapter_registry.set_adapter(...)` **before** requiring modules like `virtual_text`.
+The engine never calls `vim.*` directly. It goes through an adapter fetched from the engine's `kanban-md.adapter_registry` (`get_adapter()` / `set_adapter()`). `lua/kanban-md/adapters/neovim.lua` returns an **already-instantiated** adapter, so don't call `.new()` on it. The contract (required: `notify`, `read_buffer`, `write_buffer`, `get_cursor`, `set_cursor`, `prompt_input`, `prompt_select`; optional: the virtual-text/extmark methods) is in the engine's `adapters/interface.lua` and `adapters/README.md`. Tests swap in a mock with `adapter_registry.set_adapter(...)` **before** requiring modules like `virtual_text`.
 
 ### Command model (`lua/kanban-md/commands.lua`)
 
