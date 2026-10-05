@@ -1,0 +1,50 @@
+# CLAUDE.md
+
+This file provides guidance to Claude Code (claude.ai/code) when working with code in this repository.
+
+## What this repo is
+
+kanban-md.nvim is only the **Neovim layer** of the kanban-md project: user commands, keymaps, buffer/cursor I/O, virtual text, and the Neovim adapter. All parsing, writing, the Board/Column/Card model, triggers, stats, config and validation live in the **kanban-md-engine** git submodule at `lib/kanban-md-engine` (it has its own `CLAUDE.md`, `Makefile` and busted tests). The markdown syntax spec lives in the separate `kanban-md` repo. Engine bugs should be fixed in the engine repo, not patched here.
+
+The repo is colocated with jj (`.jj/` exists alongside `.git/`).
+
+## Task tracking
+
+Work items live in `TODO.kanban.md`, a kanban-md board. Change it through the engine (the `kanban-md` skill or `kanban-board` agent), not by hand-editing. Each card gets a `complexity` property: `1` least complex (small, mechanical, one place), `2` moderate, `3` most complex (cross-cutting, needs design decisions or touches the engine).
+
+## Commands
+
+```sh
+git submodule update --init      # engine must be present for anything to load
+./tests/run_tests.sh             # all plugin specs (zsh; clones plenary.nvim into $XDG_CACHE_HOME/kanban-md/ on first run)
+nvim --headless -c "PlenaryTestFile tests/integration/virtual_text_spec.lua" -c "quit"   # single spec
+```
+
+There is no build or lint step.
+
+`tests/run_tests.lua` runs **only** spec files containing the tag `#neovim-only` (each in its own headless nvim process). A new spec without that tag in its `describe(...)` string is silently skipped. Each spec starts with `require('tests.test_helper')` to put the engine on `package.path`.
+
+## Architecture
+
+### Shared `kanban-md.*` Lua namespace
+
+The plugin (`lua/kanban-md/`) and the engine (`lib/kanban-md-engine/lua/kanban-md/`) use the **same module namespace**. `require('kanban-md.board')` resolves to the engine; `require('kanban-md.commands')` resolves to the plugin. The engine is made reachable by prepending `lib/kanban-md-engine/lua` to `package.path`, a step repeated in `plugin/kanban-md.lua`, `lua/kanban-md/init.lua`, `tests/test_helper.lua` and `tests/run_tests.lua`. If the submodule path changes, update all four. (`run_tests.lua` still points at the old `lib/kanban-md` path.)
+
+Some files exist in both trees (`extras/id_triggers.lua`, `extras/*_triggers.lua`, `adapters/cli.lua`, `adapters/interface.lua`, `virtual_text.lua`) and some have diverged. Neovim's runtimepath loader runs before the `package.path` searcher, so inside Neovim the plugin's copy wins. Check which copy you are editing, and whether the change belongs in the engine instead.
+
+### Load / setup flow
+
+1. `plugin/kanban-md.lua` runs on startup. It adds the engine to `package.path` and calls `commands.setup()` to register the `:Kanban*` user commands, guarded by `vim.g.kanban_md_commands_loaded`.
+2. `require('kanban-md').setup(opts)` (`lua/kanban-md/init.lua`) passes the Neovim adapter to the engine's `core.setup`, which applies config and registers the adapter, then calls `commands.setup()` again.
+
+### Adapter pattern
+
+The engine never calls `vim.*` directly. It goes through an adapter fetched from the engine's `kanban-md.adapter_registry` (`get_adapter()` / `set_adapter()`). `lua/kanban-md/adapters/neovim.lua` returns an **already-instantiated** adapter, so don't call `.new()` on it. The contract (required: `notify`, `read_buffer`, `write_buffer`, `get_cursor`, `set_cursor`, `prompt_input`, `prompt_select`; optional: the virtual-text/extmark methods) is in `adapters/interface.lua` and `adapters/README.md`. Tests swap in a mock with `adapter_registry.set_adapter(...)` **before** requiring modules like `virtual_text`.
+
+### Command model (`lua/kanban-md/commands.lua`)
+
+Each command reads the whole buffer through the adapter, parses it into a fresh engine `Board`, mutates the board, and writes the whole buffer back only on success. On error nothing is written, and Neovim's undo is the rollback mechanism. Engine trigger and validation errors are raised as Lua errors and reduced to user-facing text by `extract_error_message()`. If you change the engine's error formats, keep its patterns in sync. `:KanbanAddDependency` keeps two-step state (`dependency_state`) between invocations.
+
+### Board detection
+
+`detection_strategy` config (`"marker"` default: `<!-- kanban-board -->` in the first 10 lines; `"extension"`: `*.kanban.md`; `"both"`; `"auto"`: legacy, any H6 header) decides which markdown buffers are treated as boards and get virtual text.
