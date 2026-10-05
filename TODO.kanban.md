@@ -8,7 +8,6 @@
 
 ###### Ready
 
-- tests/run_tests.sh passes the runner path to luafile unescaped, so a checkout path containing spaces breaks the test run <!-- backlog: 1791188866, complexity: 1, ready: 1791191020 -->
 
 
 
@@ -18,6 +17,7 @@
 
 
 ###### In Progress
+
 
 
 
@@ -43,3 +43,4 @@
 - CI 3: add .github/workflows/test.yml (push master, PRs, dispatch; contents read; PR concurrency cancel; ubuntu+macos, nvim stable via rhysd/action-setup-vim; submodule via webfactory/ssh-agent plus ENGINE_DEPLOY_KEY); needs CI 1, 2, 4 <!-- complexity: 2, done: 1791190970, in_progress: 1791188790, ready: 1791188172 -->
 - Set up Github workflows/actions for testing <!-- backlog: 1791178518, done: 1791190980, in_progress: 1791188155, ready: 1791187545 -->
 - Register the cursor positioning trigger (extras/cursor_triggers.lua) from the plugin; engine commit da82ced stopped wiring it, so tests/unit/cursor_positioning_spec.lua fails 6/9 <!-- backlog: 1791183130, complexity: 2, done: 1791191195, in_progress: 1791191135, ready: 1791191002 -->
+- tests/run_tests.sh passes the runner path to luafile unescaped, so a checkout path containing spaces breaks the test run <!-- backlog: 1791188866, complexity: 1, done: 1791191312, in_progress: 1791191200, ready: 1791191020 -->

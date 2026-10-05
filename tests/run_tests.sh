@@ -33,8 +33,12 @@ if [ -n "${PLENARY_REF:-}" ]; then
 	git -C "$KANBAN_PLENARY_PATH" checkout --quiet --detach FETCH_HEAD || exit 1
 fi
 
+# Paths reach nvim through the environment rather than being spliced into Ex
+# commands, where a space would split them.
+ADD_PLENARY="lua vim.opt.rtp:append(os.getenv('KANBAN_PLENARY_PATH'))"
+
 # Check if plenary is available
-if ! nvim --headless --cmd "set rtp+=$KANBAN_PLENARY_PATH" -c "lua require('plenary')" -c "quit" 2>/dev/null; then
+if ! nvim --headless --cmd "$ADD_PLENARY" -c "lua require('plenary')" -c "quit" 2>/dev/null; then
 	echo "ERROR: plenary.nvim is not working properly"
 	echo "Path: $KANBAN_PLENARY_PATH"
 	exit 1
@@ -43,6 +47,6 @@ fi
 # run_tests.lua ends with `cquit`, so nvim's exit status is the test result.
 # The trailing `cquit 1` is only reached if the runner itself raised an error
 # before getting that far; without it headless nvim would sit waiting.
-nvim --headless --cmd "set rtp+=$KANBAN_PLENARY_PATH" \
-	-c "luafile $PROJECT_ROOT/tests/run_tests.lua" \
+KANBAN_TEST_RUNNER="$PROJECT_ROOT/tests/run_tests.lua" nvim --headless --cmd "$ADD_PLENARY" \
+	-c "lua dofile(os.getenv('KANBAN_TEST_RUNNER'))" \
 	-c "cquit 1"
