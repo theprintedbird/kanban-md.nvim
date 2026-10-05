@@ -7,6 +7,7 @@ local column_helper = require("kanban-md.helpers.column")
 local virtual_text = require("kanban-md.virtual_text")
 local adapter_registry = require("kanban-md.adapter_registry")
 local detect = require("kanban-md.detect")
+local cursor_triggers = require("kanban-md.extras.cursor_triggers")
 
 local M = {}
 
@@ -110,6 +111,7 @@ local function get_current_board()
   local lines = get_buffer_lines()
   local board = Board:new()
   board:parse(lines)
+  cursor_triggers.register(board)
 
   -- Validate dependencies on parse if enabled
   if config.get_value("dependency_check_on_parse") then
@@ -344,7 +346,7 @@ function M.new_card()
         update_buffer_with_board(current_board)
 
         -- Move cursor to new card if enabled
-        if config.get_value('enable_cursor_positioning') then
+        if current_board:get_config_value("enable_cursor_positioning") then
           move_cursor_to_target_card(current_board)
         end
 

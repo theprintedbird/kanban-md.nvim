@@ -176,6 +176,7 @@ require("kanban-md").setup({
 
   -- User interaction
   confirm_destructive = true, -- confirm before force-complete and other destructive actions
+  enable_cursor_positioning = false, -- move the cursor to a card after :KanbanNewCard (a board file can override it)
 })
 ```
 

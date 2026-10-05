@@ -6,6 +6,7 @@ require('tests.test_helper')
 local Board = require('kanban-md.board')
 local Card = require('kanban-md.card')
 local config = require('kanban-md.config')
+local cursor_triggers = require('kanban-md.extras.cursor_triggers')
 
 describe("Cursor positioning feature #neovim-only", function()
   before_each(function()
@@ -24,6 +25,7 @@ describe("Cursor positioning feature #neovim-only", function()
 
       -- Trigger auto-registration (normally called after parsing)
       board:auto_register_triggers()
+      cursor_triggers.register(board)
 
       -- Create a new card
       local card = Card:new("card-1", "Test task")
@@ -43,6 +45,7 @@ describe("Cursor positioning feature #neovim-only", function()
       local in_progress_col = board:add_column("in_progress", "In Progress")
 
       board:auto_register_triggers()
+      cursor_triggers.register(board)
 
       local card = Card:new("card-2", "Test task")
       todo_col:add_card(card)
@@ -66,6 +69,7 @@ describe("Cursor positioning feature #neovim-only", function()
       local col3 = board:add_column("done", "Done")
 
       board:auto_register_triggers()
+      cursor_triggers.register(board)
 
       local card1 = Card:new("card-3", "Test task 1")
       local card2 = Card:new("card-4", "Test task 2")
@@ -91,6 +95,7 @@ describe("Cursor positioning feature #neovim-only", function()
       local board = Board:new()
       local todo_col = board:add_column("todo", "Todo")
       board:auto_register_triggers()
+      cursor_triggers.register(board)
 
       local card = Card:new("card-6", "Test task")
       todo_col:add_card(card)
@@ -108,6 +113,7 @@ describe("Cursor positioning feature #neovim-only", function()
 
       local todo_col = board:add_column("todo", "Todo")
       board:auto_register_triggers()
+      cursor_triggers.register(board)
 
       local card = Card:new("card-7", "Test task")
       todo_col:add_card(card)
@@ -126,6 +132,7 @@ describe("Cursor positioning feature #neovim-only", function()
 
       local todo_col = board:add_column("todo", "Todo")
       board:auto_register_triggers()
+      cursor_triggers.register(board)
 
       local card = Card:new("card-8", "Test task")
       todo_col:add_card(card)
@@ -142,6 +149,7 @@ describe("Cursor positioning feature #neovim-only", function()
 
       local todo_col = board:add_column("todo", "Todo")
       board:auto_register_triggers()
+      cursor_triggers.register(board)
 
       local card = Card:new("card-9", "Test task")
       todo_col:add_card(card)
@@ -159,6 +167,7 @@ describe("Cursor positioning feature #neovim-only", function()
       board.title = "Test Board"
       local todo_col = board:add_column("todo", "Todo")
       board:auto_register_triggers()
+      cursor_triggers.register(board)
 
       local card = Card:new("card-10", "Test task")
       todo_col:add_card(card)
@@ -186,6 +195,7 @@ describe("Cursor positioning feature #neovim-only", function()
       board.title = "Test Board"
       local todo_col = board:add_column("todo", "Todo")
       board:auto_register_triggers()
+      cursor_triggers.register(board)
 
       local card = Card:new("card-11", "Unique Test Card")
       todo_col:add_card(card)
