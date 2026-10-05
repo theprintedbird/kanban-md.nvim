@@ -1,5 +1,7 @@
 # kanban-md.nvim
 
+[![Tests](https://github.com/theprintedbird/kanban-md.nvim/actions/workflows/test.yml/badge.svg)](https://github.com/theprintedbird/kanban-md.nvim/actions/workflows/test.yml)
+
 Kanban boards in Markdown files, for Neovim.
 
 kanban-md.nvim is the **Neovim plugin layer** of the kanban-md project. It provides the commands, keymaps, buffer I/O, and virtual text display that let you manage a kanban board directly from a Neovim buffer. It does not itself parse or manipulate the markdown — that logic lives in a separate engine that this plugin depends on.
@@ -188,6 +190,8 @@ git submodule update --init
 ./tests/run_tests.sh
 ```
 
+The script runs under any POSIX `sh` and exits non-zero if a spec fails. It clones plenary.nvim into `${XDG_CACHE_HOME:-$HOME/.cache}/kanban-md/` on first run. Set `PLENARY_REF` to pin plenary to a tag or commit.
+
 Or run a single spec directly:
 
 ```sh
@@ -195,3 +199,31 @@ nvim --headless -c "PlenaryTestFile tests/integration/virtual_text_spec.lua" -c 
 ```
 
 Engine-level tests (parser, writer, board/column/card behaviour, triggers, stats) live in the `kanban-md-engine` repository, not here.
+
+Lint with [luacheck](https://github.com/lunarmodules/luacheck), configured in `.luacheckrc`:
+
+```sh
+luacheck lua plugin ftdetect tests lazy.lua
+```
+
+## CI
+
+`.github/workflows/test.yml` runs on pushes to `master`, on pull requests and on manual dispatch. It has two jobs:
+
+- **Luacheck**, the lint command above.
+- **Tests**, `./tests/run_tests.sh` against Neovim stable on `ubuntu-latest` and `macos-latest`.
+
+The engine submodule is a private repository with an SSH URL, so the test job fetches it with a **deploy key**. To set one up:
+
+1. Generate a key pair: `ssh-keygen -t ed25519 -N "" -f kanban-md-engine-deploy -C "kanban-md.nvim CI"`.
+2. On kanban-md-engine, go to Settings → Deploy keys → Add deploy key. Paste the contents of `kanban-md-engine-deploy.pub` and leave "Allow write access" unticked.
+3. On kanban-md.nvim, go to Settings → Secrets and variables → Actions → New repository secret. Name it `ENGINE_DEPLOY_KEY` and paste the contents of `kanban-md-engine-deploy` (the private half).
+4. Delete both local files.
+
+A deploy key can read only that one repository, and it doesn't expire. `.gitmodules` keeps its SSH URL for local development.
+
+To run the workflow locally with [act](https://github.com/nektos/act), which reads its defaults from `.actrc` and runs the Linux leg only:
+
+```sh
+act -s ENGINE_DEPLOY_KEY="$(cat path/to/kanban-md-engine-deploy)"
+```

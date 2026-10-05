@@ -1,0 +1,23 @@
+# Default options for `act` (https://github.com/nektos/act), which runs the
+# GitHub Actions workflows in .github/workflows locally.
+#
+# The test job checks out the private engine submodule with a deploy key, so
+# pass it in as a secret:
+#
+#   act -s ENGINE_DEPLOY_KEY="$(cat path/to/kanban-md-engine-deploy)"
+#
+# catthehacker/ubuntu:act-latest is the medium-sized runner image; it carries
+# enough of the real ubuntu-latest tooling to install Lua, luarocks and Neovim.
+-P ubuntu-latest=catthehacker/ubuntu:act-latest
+
+# act only runs Linux containers, so skip the macos-latest leg of the test
+# matrix rather than have it fail for want of a runner.
+--matrix os:ubuntu-latest
+
+# Keep act's own artifact/cache traffic out of the working tree.
+--artifact-server-path /tmp/act-artifacts
+
+# Don't bind-mount the container daemon's socket into the job container. The
+# jobs never need nested containers, and under Podman on macOS the socket
+# lives on the host rather than in the VM, so the mount fails outright.
+--container-daemon-socket -
