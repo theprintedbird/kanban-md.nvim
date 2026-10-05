@@ -5,6 +5,7 @@
 
 - Automatically create folds for each column <!-- backlog: 1791178495 -->
 - Set up Github workflows/actions for testing <!-- backlog: 1791178518 -->
+- Register the cursor positioning trigger (extras/cursor_triggers.lua) from the plugin; engine commit da82ced stopped wiring it, so tests/unit/cursor_positioning_spec.lua fails 6/9 <!-- backlog: 1791183130, complexity: 2 -->
 
 
 ###### Ready
