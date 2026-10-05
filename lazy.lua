@@ -3,18 +3,16 @@
 
 return {
   "theprintedbird/kanban-md.nvim",
-	lazy = true,
+  lazy = true,
   ft = "markdown",
+  submodules = true, -- lazy.nvim will fetch lib/kanban-md-engine for you
   config = function()
     require('kanban-md').setup()
   end,
   cmd = {
-    "KanbanNewBoard",
-    "KanbanNewCard",
-    "KanbanMoveCard",
-    "KanbanCompleteCard",
-    "KanbanArchive",
-    "KanbanStats",
-    "KanbanSetComplexity",
+    "KanbanNewBoard", "KanbanNewCard", "KanbanNewColumn",
+    "KanbanMoveCard", "KanbanCompleteCard", "KanbanForceCompleteCard",
+    "KanbanSetComplexity", "KanbanArchive", "KanbanStats",
+    "KanbanAddDependency", "KanbanPersistIds", "KanbanVersion",
   },
 }

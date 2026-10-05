@@ -67,7 +67,7 @@ kanban-md.nvim depends on `kanban-md-engine`, included as a git submodule at `li
     "KanbanNewBoard", "KanbanNewCard", "KanbanNewColumn",
     "KanbanMoveCard", "KanbanCompleteCard", "KanbanForceCompleteCard",
     "KanbanSetComplexity", "KanbanArchive", "KanbanStats",
-    "KanbanAddDependency", "KanbanPersistIds",
+    "KanbanAddDependency", "KanbanPersistIds", "KanbanVersion",
   },
 }
 ```
