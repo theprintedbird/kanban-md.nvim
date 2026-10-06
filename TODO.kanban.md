@@ -11,7 +11,8 @@
 - CI 16 (optional, low priority): typos/codespell check and a markdown link check on README.md and SPEC links; once versions are tagged, consider release automation (release-please, a luarocks rockspec and upload, CHANGELOG) <!-- backlog: 1791196944, complexity: 1, id: card_01M463W7TAVKYSJWT0Y8D3SV1V -->
 - Make the "new card" text box centred in the screen, and larger. <!-- backlog: 1791250669, id: card_01M47DR8ARJX5MFFMGD1TK9XGP -->
 - Moving several cards at once between columns <!-- backlog: 1791250713, id: card_01M47DSJT99H34N2A35KEVVXSF -->
-- Remove the extra keypress needed when adding a dependency  <!-- backlog: 1791250744, id: card_01M47DTGW3QV7D2V77A8HMHMYZ -->
+- Remove the extra keypress needed when adding a dependency <!-- backlog: 1791250744, id: card_01M47DTGW3QV7D2V77A8HMHMYZ -->
+- Update README, it's out of date, especially the section on the different projects. <!-- backlog: 1791303103, id: card_01M48ZRD12231KAR28XP9HPY8Y -->
 
 
 
