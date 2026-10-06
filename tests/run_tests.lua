@@ -45,8 +45,10 @@ local function run_test_file(test_file)
     lib_path .. "/?.lua;" .. lib_path .. "/?/init.lua;"
   )
   local run = string.format("lua require('plenary.test_harness').test_file(%q)", test_file)
+  -- --clean keeps the developer's init.lua and plugins out of the spec;
+  -- run_tests.sh has already pointed the XDG dirs at a temp directory.
   local cmd = table.concat({
-    "nvim --headless",
+    "nvim --headless --clean",
     "--cmd", vim.fn.shellescape(setup),
     "-c", vim.fn.shellescape(run),
     "-c quit",

@@ -16,6 +16,19 @@ PROJECT_ROOT="$(cd "$(dirname "$0")/.." && pwd)"
 KANBAN_PLENARY_PATH="${XDG_CACHE_HOME:-$HOME/.cache}/kanban-md/plenary.nvim"
 export KANBAN_PLENARY_PATH
 
+# Keep the developer's own config, plugins and state out of the run. Every nvim
+# here (and each per-spec nvim run_tests.lua starts) uses --clean; these point
+# whatever else nvim reads or writes at a throwaway directory. XDG_CACHE_HOME
+# is left alone so the plenary clone is reused between runs.
+KANBAN_TEST_HOME="$(mktemp -d "${TMPDIR:-/tmp}/kanban-md-tests.XXXXXX")" || exit 1
+trap 'rm -rf "$KANBAN_TEST_HOME"' EXIT
+trap 'exit 1' HUP INT TERM
+XDG_CONFIG_HOME="$KANBAN_TEST_HOME/config"
+XDG_DATA_HOME="$KANBAN_TEST_HOME/data"
+XDG_STATE_HOME="$KANBAN_TEST_HOME/state"
+export XDG_CONFIG_HOME XDG_DATA_HOME XDG_STATE_HOME
+unset NVIM_APPNAME
+
 echo "Running Kanban plugin tests..."
 echo "Project directory: $PROJECT_ROOT"
 echo "Plenary path: $KANBAN_PLENARY_PATH"
@@ -38,7 +51,7 @@ fi
 ADD_PLENARY="lua vim.opt.rtp:append(os.getenv('KANBAN_PLENARY_PATH'))"
 
 # Check if plenary is available
-if ! nvim --headless --cmd "$ADD_PLENARY" -c "lua require('plenary')" -c "quit" 2>/dev/null; then
+if ! nvim --headless --clean --cmd "$ADD_PLENARY" -c "lua require('plenary')" -c "quit" 2>/dev/null; then
 	echo "ERROR: plenary.nvim is not working properly"
 	echo "Path: $KANBAN_PLENARY_PATH"
 	exit 1
@@ -47,6 +60,6 @@ fi
 # run_tests.lua ends with `cquit`, so nvim's exit status is the test result.
 # The trailing `cquit 1` is only reached if the runner itself raised an error
 # before getting that far; without it headless nvim would sit waiting.
-KANBAN_TEST_RUNNER="$PROJECT_ROOT/tests/run_tests.lua" nvim --headless --cmd "$ADD_PLENARY" \
+KANBAN_TEST_RUNNER="$PROJECT_ROOT/tests/run_tests.lua" nvim --headless --clean --cmd "$ADD_PLENARY" \
 	-c "lua dofile(os.getenv('KANBAN_TEST_RUNNER'))" \
 	-c "cquit 1"
