@@ -13,16 +13,17 @@
 - Moving several cards at once between columns <!-- backlog: 1791250713, id: card_01M47DSJT99H34N2A35KEVVXSF -->
 - Remove the extra keypress needed when adding a dependency <!-- backlog: 1791250744, id: card_01M47DTGW3QV7D2V77A8HMHMYZ -->
 - Update README, it's out of date, especially the section on the different projects. <!-- backlog: 1791303103, id: card_01M48ZRD12231KAR28XP9HPY8Y -->
+- Test runner loads the developer's own Neovim config: tests/run_tests.sh and the per-spec nvim processes started by tests/run_tests.lua don't pass --clean or -u NONE, so a local init.lua (or NVIM_APPNAME) runs during tests and can fail specs that pass in CI (seen: 0.9.5 runs failing filetype_spec and fold_spec with E474 because of a user config); start every nvim with --clean (or -u NONE), point XDG_CONFIG_HOME, XDG_DATA_HOME and XDG_STATE_HOME at a temp dir and unset NVIM_APPNAME, then check plenary still loads and all specs pass <!-- backlog: 1791303687, complexity: 1, id: card_01M490A7SQ3ZMC3XR6562J1P75 -->
 
 
 
 ###### Ready
 
-- CI 10: Neovim version matrix: add an nvim axis to the test job with stable, nightly (continue-on-error so upstream breakage shows without blocking) and a minimum supported version; first decide and document that minimum in README (vim.fs, vim.filetype.add and extmark APIs set the floor); keep ubuntu+macos, or run nightly on ubuntu only to save minutes; include the nvim version in the job name <!-- backlog: 1791196920, complexity: 2, id: card_01M463W7WXTXP4XHE4GJN5Y7XH, ready: 1791250367 -->
 
 
 
 ###### In Progress
+
 
 
 
@@ -50,3 +51,4 @@
 - CI 8: add workflow linting: a .github/workflows/lint-workflows.yml (or a job beside Luacheck) running zizmor (zizmorcore/zizmor-action or pipx run zizmor .github/workflows; optionally upload SARIF to code scanning with security-events: write scoped to that job only) and actionlint (expression/type errors, shellcheck on run: blocks); trigger on changes to .github/**; needs CI 7 first or zizmor reports unpinned-uses and artipacked immediately; document the local commands in README and CLAUDE.md <!-- backlog: 1791196912, complexity: 1, depends_on: [card_01M463W89GYGCNB2JDZNAH7MQW], done: 1791207577, id: card_01M463W7X4S7JJ8DTRSY6KSHKA, in_progress: 1791207410, ready: 1791207025 -->
 - CI 9: add .github/dependabot.yml: github-actions ecosystem, weekly, grouped into one PR, so the SHA pins from CI 7 do not go stale; optionally the gitsubmodule ecosystem for lib/kanban-md-engine so engine bumps arrive as tested PRs (check Dependabot can reach the private SSH submodule - may need a Dependabot secret or an HTTPS URL); needs CI 7 <!-- backlog: 1791196916, complexity: 1, depends_on: [card_01M463W89GYGCNB2JDZNAH7MQW], done: 1791207632, id: card_01M463W7NHDNT2GCTF2TBHHC5A, in_progress: 1791207583, ready: 1791207028 -->
 - CI 15 (engine repo - do the work there, not here): apply the same hardening to lib/kanban-md-engine/.github/workflows/ci.yml: top-level permissions: contents: read, timeout-minutes per job, a concurrency group cancelling superseded PR runs, plus the CI 7-9 changes (SHA pins, persist-credentials: false, zizmor + actionlint, dependabot.yml); note actions/upload-artifact@v4 lags the other actions; zizmor --persona pedantic currently reports 7 unpinned-uses, 2 artipacked, 3 excessive-permissions, concurrency-limits, and a template-injection from ${{ matrix.lua }} in the busted run: block (pass it through env: instead); verify with zizmor .github and actionlint, then bump the submodule here <!-- backlog: 1791196940, complexity: 3, done: 1791304755, id: card_01M463W7QTYJRCEKNJEM4QG892 -->
+- CI 10: Neovim version matrix: add an nvim axis to the test job with stable, nightly (continue-on-error so upstream breakage shows without blocking) and a minimum supported version; first decide and document that minimum in README (vim.fs, vim.filetype.add and extmark APIs set the floor); keep ubuntu+macos, or run nightly on ubuntu only to save minutes; include the nvim version in the job name <!-- backlog: 1791196920, complexity: 2, done: 1791303583, id: card_01M463W7WXTXP4XHE4GJN5Y7XH, in_progress: 1791303530, ready: 1791250367 -->

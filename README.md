@@ -45,6 +45,8 @@ See `lib/kanban-md-engine/lua/kanban-md/adapters/README.md` for the full adapter
 
 ## Installation
 
+Requires **Neovim 0.9.5 or later**. CI runs the tests against 0.9.5, the current stable release and nightly.
+
 kanban-md.nvim depends on `kanban-md-engine`, included as a git submodule at `lib/kanban-md-engine`. Make sure submodules are fetched, however you install the plugin.
 
 ### lazy.nvim
@@ -226,7 +228,9 @@ luacheck lua plugin ftdetect tests lazy.lua
 `.github/workflows/test.yml` runs on pushes to `master`, on pull requests and on manual dispatch. It has two jobs:
 
 - **Luacheck**, the lint command above.
-- **Tests**, `./tests/run_tests.sh` against Neovim stable on `ubuntu-latest` and `macos-latest`.
+- **Tests**, `./tests/run_tests.sh` against Neovim stable on `ubuntu-latest` and `macos-latest`, plus the minimum supported version (0.9.5) and nightly on `ubuntu-latest`. A nightly failure shows as a failed job but doesn't fail the run, so a break in upstream Neovim can't block a merge.
+
+The hard floor is 0.8, since the plugin calls `vim.api.nvim_set_option_value` with a `buf` key and relies on `vim.filetype.add`, neither of which 0.7 supports. The suite passes on 0.8.3, but only 0.9.5 and later are supported. Before using an API newer than 0.9 (`vim.uv`, `vim.iter`, `vim.system` and so on), raise the minimum in the test matrix and here.
 
 The engine submodule is a private repository with an SSH URL, so the test job fetches it with a **deploy key**. To set one up:
 

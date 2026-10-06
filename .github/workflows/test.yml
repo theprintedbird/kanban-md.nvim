@@ -41,13 +41,24 @@ jobs:
         run: luacheck lua plugin ftdetect tests lazy.lua
 
   test:
-    name: Tests (${{ matrix.os }})
+    name: Tests (${{ matrix.os }}, nvim ${{ matrix.nvim }})
     runs-on: ${{ matrix.os }}
     timeout-minutes: 10
+    # Nightly is there to give early warning of upstream changes, so its
+    # failures show on the job without failing the run.
+    continue-on-error: ${{ matrix.nvim == 'nightly' }}
     strategy:
       fail-fast: false
       matrix:
         os: [ubuntu-latest, macos-latest]
+        nvim: [stable]
+        # The minimum supported version (see README) and nightly run on Linux
+        # only, to save macOS minutes.
+        include:
+          - os: ubuntu-latest
+            nvim: v0.9.5
+          - os: ubuntu-latest
+            nvim: nightly
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         # The engine submodule is private and its .gitmodules URL is SSH,
@@ -72,7 +83,7 @@ jobs:
       - uses: rhysd/action-setup-vim@febef33995d6649302e9d88dda81e071b68f16a7 # v1.6.1
         with:
           neovim: true
-          version: stable
+          version: ${{ matrix.nvim }}
 
       - name: Neovim version
         # Recorded so a red run can be matched to the Neovim that produced it.
