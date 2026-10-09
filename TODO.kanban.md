@@ -6,7 +6,6 @@
 
 - CI 11: handle fork PRs: they do not receive ENGINE_DEPLOY_KEY, so the test job fails at webfactory/ssh-agent; either skip the submodule and test steps with a clear notice when the secret is empty (job env HAS_KEY from secrets.ENGINE_DEPLOY_KEY != empty string, steps gated on it) or state in README/CONTRIBUTING that fork PRs are not accepted; do NOT switch to pull_request_target, which would expose the key to untrusted code <!-- backlog: 1791196924, complexity: 1, id: card_01M463W7NF3P338WCKC9VTDED1 -->
 - CI 13 (optional): StyLua format check: add stylua.toml matching the engine (or agree a config if the engine has none), one-off format commit over lua plugin ftdetect tests lazy.lua, then a stylua --check step (JohnnyMorganz/stylua-action, SHA-pinned) in the lint job; mention the command in CLAUDE.md <!-- backlog: 1791196932, complexity: 1, id: card_01M463W8FEZTVFA56QX9AYPQ62 -->
-- CI 14 (optional): vimdoc and help check: there is no doc/ directory, so :help kanban-md does not exist; write doc/kanban-md.txt (by hand or generated from README with panvimdoc), then add a CI step running nvim --headless -c "helptags doc" -c q that fails on duplicate or bad tags; if panvimdoc is used, also regenerate and fail when it differs from the committed file <!-- backlog: 1791196936, complexity: 2, id: card_01M463W8GGZDDD2GJAK4D5RET3 -->
 - CI 16 (optional, low priority): typos/codespell check and a markdown link check on README.md and SPEC links; once versions are tagged, consider release automation (release-please, a luarocks rockspec and upload, CHANGELOG) <!-- backlog: 1791196944, complexity: 1, id: card_01M463W7TAVKYSJWT0Y8D3SV1V -->
 - Make the "new card" text box centred in the screen, and larger. <!-- backlog: 1791250669, id: card_01M47DR8ARJX5MFFMGD1TK9XGP -->
 - Moving several cards at once between columns <!-- backlog: 1791250713, id: card_01M47DSJT99H34N2A35KEVVXSF -->
@@ -17,6 +16,8 @@
 
 
 ###### Ready
+
+- CI 14 (optional): vimdoc and help check: there is no doc/ directory, so :help kanban-md does not exist; write doc/kanban-md.txt (by hand or generated from README with panvimdoc), then add a CI step running nvim --headless -c "helptags doc" -c q that fails on duplicate or bad tags; if panvimdoc is used, also regenerate and fail when it differs from the committed file <!-- backlog: 1791196936, complexity: 2, id: card_01M463W8GGZDDD2GJAK4D5RET3, ready: 1791627300 -->
 
 
 
