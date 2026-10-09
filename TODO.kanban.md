@@ -17,11 +17,7 @@
 
 ###### Ready
 
-- CI 14 (optional): vimdoc and help check: there is no doc/ directory, so :help kanban-md does not exist; write doc/kanban-md.txt (by hand or generated from README with panvimdoc), then add a CI step running nvim --headless -c "helptags doc" -c q that fails on duplicate or bad tags; if panvimdoc is used, also regenerate and fail when it differs from the committed file <!-- backlog: 1791196936, complexity: 2, id: card_01M463W8GGZDDD2GJAK4D5RET3, ready: 1791627300 -->
-
-
-
-
+- CI 14 (optional): vimdoc and help check: there is no doc/ directory, so :help kanban-md does not exist; write doc/kanban-md.txt (by hand or generated from README with panvimdoc), then add a CI step running nvim --headless -c "helptags doc" -c q that fails on duplicate or bad tags; use panvimdoc, regenerate and fail when it differs from the committed file. Use ASD-STE100 Simplified Technical English. <!-- backlog: 1791196936, complexity: 2, id: card_01M463W8GGZDDD2GJAK4D5RET3, ready: 1791627300 -->
 
 
 ###### In Progress
