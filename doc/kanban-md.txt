@@ -33,8 +33,8 @@ The file is also a usual Markdown file.
 
 The plugin is only the Neovim layer. The kanban-md-engine does the parsing,
 the writing, the triggers, the statistics and the validation. The engine is
-a git submodule in `lib/kanban-md-engine`. The kanban-md repository gives
-the specification of the Markdown syntax.
+a git submodule in `lib/kanban-md-engine`. The `SPEC.md` file of the engine
+gives the specification of the Markdown syntax.
 
 ==============================================================================
 2. REQUIREMENTS                                       *kanban-md-requirements*
@@ -117,7 +117,7 @@ Rules:
   completion column.
 - The `###### __ARCHIVE__` column contains the archived cards.
 
-For the full syntax, refer to the kanban-md repository.
+For the full syntax, refer to `lib/kanban-md-engine/SPEC.md`.
 
 ==============================================================================
 5. COMMANDS                                               *kanban-md-commands*

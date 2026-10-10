@@ -10,7 +10,6 @@
 - Make the "new card" text box centred in the screen, and larger. <!-- backlog: 1791250669, id: card_01M47DR8ARJX5MFFMGD1TK9XGP -->
 - Moving several cards at once between columns <!-- backlog: 1791250713, id: card_01M47DSJT99H34N2A35KEVVXSF -->
 - Remove the extra keypress needed when adding a dependency <!-- backlog: 1791250744, id: card_01M47DTGW3QV7D2V77A8HMHMYZ -->
-- Update README, it's out of date, especially the section on the different projects. <!-- backlog: 1791303103, id: card_01M48ZRD12231KAR28XP9HPY8Y -->
 - CI 17 (future): widen macOS coverage and containerise local testing: macos-latest already runs nvim stable, so add the v0.9.5 minimum and nightly legs on macOS too (drop the ubuntu-only include entries in .github/workflows/test.yml, nightly stays continue-on-error); for local runs add a container setup (Dockerfile or Containerfile plus a script such as tests/run_in_container.sh, working with docker or podman) that builds Linux images with a chosen nvim version (stable, 0.9.5, nightly), mounts the checkout including lib/kanban-md-engine read-only, caches plenary pinned via PLENARY_REF, and runs ./tests/run_tests.sh; document it in README and CLAUDE.md; containers only cover Linux, so macOS results still come from CI; this also gives the isolation the test-runner-loads-user-config card asks for; still, always use --clean <!-- backlog: 1791303894, complexity: 2, id: card_01M490GHBS4WFKAA7VBJY8V3PV -->
 
 
@@ -19,7 +18,9 @@
 
 
 
+
 ###### In Progress
+
 
 
 
@@ -54,4 +55,5 @@
 - CI 10: Neovim version matrix: add an nvim axis to the test job with stable, nightly (continue-on-error so upstream breakage shows without blocking) and a minimum supported version; first decide and document that minimum in README (vim.fs, vim.filetype.add and extmark APIs set the floor); keep ubuntu+macos, or run nightly on ubuntu only to save minutes; include the nvim version in the job name <!-- backlog: 1791196920, complexity: 2, done: 1791303583, id: card_01M463W7WXTXP4XHE4GJN5Y7XH, in_progress: 1791303530, ready: 1791250367 -->
 - Test runner loads the developer's own Neovim config: tests/run_tests.sh and the per-spec nvim processes started by tests/run_tests.lua don't pass --clean or -u NONE, so a local init.lua (or NVIM_APPNAME) runs during tests and can fail specs that pass in CI (seen: 0.9.5 runs failing filetype_spec and fold_spec with E474 because of a user config); start every nvim with --clean (or -u NONE), point XDG_CONFIG_HOME, XDG_DATA_HOME and XDG_STATE_HOME at a temp dir and unset NVIM_APPNAME, then check plenary still loads and all specs pass <!-- backlog: 1791303687, complexity: 1, done: 1791304369, id: card_01M490A7SQ3ZMC3XR6562J1P75, in_progress: 1791304241, ready: 1791304197 -->
 - CI 12: pin the luacheck version in the lint job (luarocks install luacheck <ver>) so a new upstream release cannot turn lint red with no code change; take the version from the engine rockspec test_dependencies so both repos agree <!-- backlog: 1791196928, complexity: 1, done: 1791444020, id: card_01M463W8D4K484ZGNCEES8DSKJ, in_progress: 1791444006, ready: 1791305177 -->
-- CI 14 (optional): vimdoc and help check: there is no doc/ directory, so :help kanban-md does not exist; write doc/kanban-md.txt (by hand or generated from README with panvimdoc), then add a CI step running nvim --headless -c "helptags doc" -c q that fails on duplicate or bad tags. Use ASD-STE100 Simplified Technical English. <!-- backlog: 1791196936, complexity: 2, id: card_01M463W8GGZDDD2GJAK4D5RET3, ready: 1791627300, done: 1791627804 -->
+- CI 14 (optional): vimdoc and help check: there is no doc/ directory, so :help kanban-md does not exist; write doc/kanban-md.txt (by hand or generated from README with panvimdoc), then add a CI step running nvim --headless -c "helptags doc" -c q that fails on duplicate or bad tags. Use ASD-STE100 Simplified Technical English. <!-- backlog: 1791196936, complexity: 2, done: 1791627804, id: card_01M463W8GGZDDD2GJAK4D5RET3, ready: 1791627300 -->
+- Update README, it's out of date, especially the section on the different projects. <!-- backlog: 1791303103, complexity: 2, done: 1791630667, id: card_01M48ZRD12231KAR28XP9HPY8Y, in_progress: 1791630622, ready: 1791630337 -->

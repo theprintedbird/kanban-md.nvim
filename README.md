@@ -4,17 +4,14 @@
 
 Kanban boards in Markdown files, for Neovim.
 
-kanban-md.nvim is the **Neovim plugin layer** of the kanban-md project. It provides the commands, keymaps, buffer I/O, and virtual text display that let you manage a kanban board directly from a Neovim buffer. It does not itself parse or manipulate the markdown — that logic lives in a separate engine that this plugin depends on.
+kanban-md.nvim is the **Neovim plugin layer** of the kanban-md project. It provides the commands, buffer I/O, virtual text display and column folds that let you manage a kanban board directly from a Neovim buffer. It does not itself parse or manipulate the markdown — that logic lives in a separate engine that this plugin depends on.
 
-## The kanban-md project
+## Related projects
 
-kanban-md used to be a single repository. It has since been split into three:
+- **[kanban-md.nvim](https://github.com/theprintedbird/kanban-md.nvim)** (this repo) – the Neovim plugin: user commands, buffer and cursor handling, virtual text, column folds, and the adapter that lets the engine talk to Neovim.
+- **[kanban-md-engine](https://github.com/theprintedbird/kanban-md-engine)** – the platform-agnostic Lua engine: parsing, writing, the board/column/card model, triggers, stats, config and validation. Included here as a git submodule (`lib/kanban-md-engine`).
 
-- **[kanban-md](https://github.com/theprintedbird/kanban-md)** – defines the markdown syntax/spec for kanban boards (columns, cards, properties, archive, configuration comments).
-- **[kanban-md-engine](https://github.com/theprintedbird/kanban-md-engine)** – the platform-agnostic Lua engine: parsing, writing, board/column/card model, triggers, stats, validation, dependency/subtask handling. Included here as a git submodule (`lib/kanban-md-engine`).
-- **[kanban-md.nvim](https://github.com/theprintedbird/kanban-md.nvim)** (this repo) – the Neovim integration: user commands, keymaps, buffer/cursor handling, virtual text (WIP warnings, cycle time), and the adapter that lets the engine talk to Neovim.
-
-If you're looking for details on the markdown syntax itself, or how the parser/board/trigger model works, see the `kanban-md` and `kanban-md-engine` repositories. This README only covers what lives in kanban-md.nvim.
+For the markdown syntax, and how the parser, board and trigger model work, see the engine's `README.md` and `SPEC.md`. This README only covers what lives in kanban-md.nvim.
 
 ## Architecture
 
@@ -22,7 +19,7 @@ This plugin uses an **adapter pattern** to keep the engine platform-agnostic:
 
 ```
 ┌─────────────────────────────────────────┐
-│   kanban-md.nvim (this repo)             │  Commands, keymaps, virtual text
+│   kanban-md.nvim (this repo)             │  Commands, virtual text, folds
 │   lua/kanban-md/commands.lua              │
 │   lua/kanban-md/adapters/neovim.lua       │
 ├─────────────────────────────────────────┤
@@ -108,6 +105,13 @@ If you already cloned without `--recurse-submodules`, run `git submodule update 
 - `:KanbanPersistIds` - Enable persistent card IDs in the markdown (required for dependency tracking)
 - `:KanbanVersion` - Show the installed plugin version
 
+The plugin doesn't add key mappings. Map the commands yourself, for example in `ftplugin/markdown.kanban.lua`:
+
+```lua
+vim.keymap.set("n", "<localleader>m", "<Cmd>KanbanMoveCard<CR>",
+  { buffer = true, desc = "Kanban: move card" })
+```
+
 `:help kanban-md` has the full reference.
 
 ## Layout
@@ -129,8 +133,15 @@ If you already cloned without `--recurse-submodules`, run `git submodule update 
     │   │   └── cursor_triggers.lua      -- cursor positioning after moves
     │   └── adapters/
     │       └── neovim.lua               -- Neovim adapter
-    ├── lib/kanban-md-engine/                  -- kanban-md-engine (git submodule)
-    └── tests/                          -- plenary.nvim specs for this plugin
+    ├── lib/kanban-md-engine/           -- kanban-md-engine (git submodule)
+    ├── scripts/
+    │   ├── check_doc.lua               -- checks doc/kanban-md.txt
+    │   └── submodule-bump.sh           -- moves the engine submodule to a branch tip
+    ├── tests/
+    │   ├── run_tests.sh                -- test entry point
+    │   ├── unit/                       -- plenary.nvim specs
+    │   └── integration/
+    └── .github/                        -- CI workflows and Dependabot
 
 ## Board Detection
 
