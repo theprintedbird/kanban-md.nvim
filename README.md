@@ -108,10 +108,14 @@ If you already cloned without `--recurse-submodules`, run `git submodule update 
 - `:KanbanPersistIds` - Enable persistent card IDs in the markdown (required for dependency tracking)
 - `:KanbanVersion` - Show the installed plugin version
 
+`:help kanban-md` has the full reference.
+
 ## Layout
 
     kanban-md.nvim
     ├── lazy.lua                       -- lazy.nvim plugin spec
+    ├── doc/
+    │   └── kanban-md.txt               -- :help kanban-md
     ├── ftdetect/
     │   └── kanban-md.lua               -- sets the markdown.kanban filetype
     ├── plugin/
@@ -220,14 +224,23 @@ Engine-level tests (parser, writer, board/column/card behaviour, triggers, stats
 Lint with [luacheck](https://github.com/lunarmodules/luacheck), configured in `.luacheckrc`:
 
 ```sh
-luacheck lua plugin ftdetect tests lazy.lua
+luacheck lua plugin ftdetect tests scripts lazy.lua
 ```
+
+The `:help kanban-md` file, `doc/kanban-md.txt`, is written by hand. Check it after editing:
+
+```sh
+nvim --clean --headless -l scripts/check_doc.lua
+```
+
+It runs `:helptags` on a copy of `doc/`, which fails on a duplicate tag, and checks that every `|link|` resolves to a tag in `doc/` or in Neovim's own help.
 
 ## CI
 
-`.github/workflows/test.yml` runs on pushes to `master`, on pull requests and on manual dispatch. It has two jobs:
+`.github/workflows/test.yml` runs on pushes to `master`, on pull requests and on manual dispatch. It has three jobs:
 
 - **Luacheck**, the lint command above.
+- **Help file**, the help file check above, on Neovim stable.
 - **Tests**, `./tests/run_tests.sh` against Neovim stable on `ubuntu-latest` and `macos-latest`, plus the minimum supported version (0.9.5) and nightly on `ubuntu-latest`. A nightly failure shows as a failed job but doesn't fail the run, so a break in upstream Neovim can't block a merge.
 
 The hard floor is 0.8, since the plugin calls `vim.api.nvim_set_option_value` with a `buf` key and relies on `vim.filetype.add`, neither of which 0.7 supports. The suite passes on 0.8.3, but only 0.9.5 and later are supported. Before using an API newer than 0.9 (`vim.uv`, `vim.iter`, `vim.system` and so on), raise the minimum in the test matrix and here.

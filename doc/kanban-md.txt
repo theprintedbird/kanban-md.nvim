@@ -1,0 +1,368 @@
+*kanban-md.txt*    Kanban boards in Markdown files
+
+Homepage: https://github.com/theprintedbird/kanban-md.nvim
+
+==============================================================================
+CONTENTS                                                  *kanban-md-contents*
+
+  1. Introduction ........................................ |kanban-md-intro|
+  2. Requirements ................................. |kanban-md-requirements|
+  3. Installation ................................. |kanban-md-installation|
+  4. Board format ....................................... |kanban-md-format|
+  5. Commands ......................................... |kanban-md-commands|
+  6. Board detection ................................. |kanban-md-detection|
+  7. Column folds ......................................... |kanban-md-folds|
+  8. Virtual text ................................... |kanban-md-virtual-text|
+  9. Configuration ...................................... |kanban-md-config|
+ 10. Undo and errors ...................................... |kanban-md-undo|
+
+==============================================================================
+1. INTRODUCTION                                     *kanban-md* *kanban-md-intro*
+
+kanban-md.nvim is a Neovim plugin. You use it to manage a kanban board in a
+Markdown file. You do all the work in the buffer.
+
+A board has columns and cards:
+- A column is a `######` heading.
+- A card is a list item.
+- The properties of a card are in an HTML comment at the end of the first
+  line of the card. Examples of properties are timestamps, complexity and
+  dependencies.
+
+The file is also a usual Markdown file.
+
+The plugin is only the Neovim layer. The kanban-md-engine does the parsing,
+the writing, the triggers, the statistics and the validation. The engine is
+a git submodule in `lib/kanban-md-engine`. The kanban-md repository gives
+the specification of the Markdown syntax.
+
+==============================================================================
+2. REQUIREMENTS                                       *kanban-md-requirements*
+
+- Neovim 0.9.5 or later.
+- The `lib/kanban-md-engine` submodule. The plugin does not operate without
+  it.
+
+==============================================================================
+3. INSTALLATION                                       *kanban-md-installation*
+
+Make sure that your plugin manager installs the submodules.
+
+lazy.nvim: >lua
+    {
+      "theprintedbird/kanban-md.nvim",
+      submodules = true,
+      ft = { "markdown", "markdown.kanban" },
+      cmd = {
+        "KanbanNewBoard", "KanbanNewCard", "KanbanNewColumn",
+        "KanbanMoveCard", "KanbanCompleteCard", "KanbanForceCompleteCard",
+        "KanbanSetComplexity", "KanbanArchive", "KanbanStats",
+        "KanbanAddDependency", "KanbanPersistIds", "KanbanVersion",
+      },
+      config = function()
+        require("kanban-md").setup()
+      end,
+    }
+<
+If the plugin loads by filetype, use the two filetypes `markdown` and
+`markdown.kanban`.
+
+To install the plugin manually: >sh
+    git clone --recurse-submodules \
+      https://github.com/theprintedbird/kanban-md.nvim \
+      ~/.config/nvim/pack/plugins/start/kanban-md.nvim
+<
+If you clone without `--recurse-submodules`, do this step in the plugin
+directory: `git submodule update --init`.
+
+The plugin adds the commands when Neovim starts. To use your configuration,
+call |kanban-md.setup()|.
+
+==============================================================================
+4. BOARD FORMAT                                             *kanban-md-format*
+
+This is an example of a small board: >markdown
+    <!-- kanban-board -->
+    # Project board
+    <!-- kanban:config wip_limit: 7 -->
+
+    ###### Backlog
+
+    - Write the parser <!-- backlog: 1763528218, complexity: 3 -->
+
+    ###### In Progress
+    <!-- column:config wip_limit: 3 -->
+
+    - Fix the writer <!-- backlog: 1763528218, in_progress: 1763600000 -->
+      Indent each continuation line by two or more spaces.
+
+    ###### Done
+<
+Rules:
+- A column is an H6 heading. H2 to H5 headings, and the text below them, are
+  notes. The plugin does not change the notes.
+- A card is a `- ` list item. Do not use checkboxes. A card is complete when
+  it is in a completion column.
+- When a card goes into a column, the plugin sets a property for that column
+  to the time. The time is in Unix epoch seconds by default. The name of the
+  property is the column name in lowercase. Each character that is not a
+  letter, a digit or `_` changes to `_`. For example, `In Progress` becomes
+  `in_progress`.
+- You can set a `wip_limit` on the board or on a column. The plugin stops a
+  move or a new card that goes above the limit.
+- You can set the role of a column in its `column:config` comment. The roles
+  are `is_backlog_state`, `is_start_state`, `is_completion_state`,
+  `is_blocked_state` and `is_waiting_state`. If you do not set the roles, the
+  first column is the backlog and start column. The last column is the
+  completion column.
+- The `###### __ARCHIVE__` column contains the archived cards.
+
+For the full syntax, refer to the kanban-md repository.
+
+==============================================================================
+5. COMMANDS                                               *kanban-md-commands*
+
+Each command does these steps:
+1. It reads the full buffer.
+2. It parses the buffer into a board.
+3. It makes the change.
+4. It writes the full buffer again.
+
+Some commands use "the card at the cursor". This is the card that has the
+cursor on its first line or on one of its continuation lines.
+
+                                                             *:KanbanNewBoard*
+:KanbanNewBoard
+    Makes a new board in the current buffer. The command prompts you for a
+    title. It replaces the buffer with a board that has the
+    |kanban-md-default_columns|. It writes the `<!-- kanban-board -->` marker
+    on the first line. It sets the filetype to `markdown.kanban`.
+
+                                                              *:KanbanNewCard*
+:KanbanNewCard
+    Adds a card. The command prompts you for the text of the card. Then it
+    prompts you for the column. If |kanban-md-enable_cursor_positioning| is
+    `true`, the cursor moves to the new card.
+
+                                                            *:KanbanNewColumn*
+:KanbanNewColumn
+    Adds a column. The command prompts you for the name of the column. Then
+    it prompts you for a WIP limit. The WIP limit is optional. To add no WIP
+    limit, push <Enter>.
+
+                                                             *:KanbanMoveCard*
+:KanbanMoveCard
+    Moves the card at the cursor. Select the target column from the list.
+    The command sets the timestamp of the target column. The WIP limits and
+    the validation checks apply.
+
+                                                         *:KanbanCompleteCard*
+:KanbanCompleteCard
+    Moves the card at the cursor to the completion column. All the
+    validation checks apply. This includes |kanban-md-dependency_validation|
+    and |kanban-md-subtask_validation|.
+
+                                                    *:KanbanForceCompleteCard*
+:KanbanForceCompleteCard
+    Moves the card at the cursor to the completion column, without the
+    dependency checks and the subtask checks. The WIP limits and the
+    workflow rules apply. If |kanban-md-confirm_destructive| is `true`, the
+    command asks you to confirm the move.
+
+                                                        *:KanbanSetComplexity*
+:KanbanSetComplexity
+    Sets the `complexity` property of the card at the cursor. The command
+    prompts you for a number. The number must be more than 0.
+
+                                                              *:KanbanArchive*
+:KanbanArchive
+    Moves complete cards to `__ARCHIVE__`. The command moves only the cards
+    that are complete for more than |kanban-md-archive_after_days|.
+
+                                                                *:KanbanStats*
+:KanbanStats
+    Shows the statistics of the board in a split window. The statistics
+    include the card counts, the WIP and the lead and cycle times. The split
+    window uses the buffer "Kanban Statistics". The command uses the same
+    buffer each time.
+
+                                                        *:KanbanAddDependency*
+:KanbanAddDependency
+    Makes one card depend on a different card. The two cards must have IDs.
+    Before you use this command, use |:KanbanPersistIds|.
+
+    Do these steps:
+    1. Put the cursor on the card that has the dependency.
+    2. Do the command. The plugin highlights the card with
+       |kanban-md-dependency_marking_hl|.
+    3. Put the cursor on the card that the first card depends on.
+    4. Do the command again.
+
+    The plugin adds the ID of the second card to the `depends_on` property
+    of the first card. A card cannot depend on itself. The plugin stops a
+    dependency that makes a cycle.
+
+                                                           *:KanbanPersistIds*
+:KanbanPersistIds
+    Sets persistent card IDs for the board. The command writes
+    `persist_card_ids: true` in the config comment of the board. It gives
+    an ID to each card that has no ID. |:KanbanAddDependency| uses these IDs.
+
+                                                              *:KanbanVersion*
+:KanbanVersion
+    Shows the installed version.
+
+The plugin does not add key mappings. You can add your own key mappings, for
+example in `ftplugin/markdown.kanban.lua`: >lua
+    vim.keymap.set("n", "<localleader>m", "<Cmd>KanbanMoveCard<CR>",
+      { buffer = true, desc = "Kanban: move card" })
+<
+
+==============================================================================
+6. BOARD DETECTION                                       *kanban-md-detection*
+
+When the plugin finds a board, it sets the filetype of the buffer to
+`markdown.kanban`. Neovim loads the files for `markdown` first (ftplugin,
+syntax and treesitter). Then it loads the files for `kanban`. To add your
+own settings for boards, use `ftplugin/markdown.kanban.lua` or a |FileType|
+autocmd for `markdown.kanban`.
+
+These buffers are boards:
+- All files with names that end in `.kanban.md`.
+- Buffers where you did |:KanbanNewBoard|.
+- Other Markdown files that |kanban-md-detection_strategy| accepts.
+
+The plugin does the detection when you open a file. It does the detection
+again each time you write the file. Thus, if you add or remove the marker,
+the filetype changes on the next |:w|.
+
+==============================================================================
+7. COLUMN FOLDS                                              *kanban-md-folds*
+
+Each column has a fold. The fold starts at the `######` heading of the
+column. The fold stops at the line before the next heading of any level. A
+closed fold shows the heading and the number of cards, for example
+`###### Ready (3 cards)`. Use the usual fold commands:
+- |za| opens or closes one column.
+- |zM| closes all the columns.
+- |zR| opens all the columns.
+
+The plugin sets the fold options for the window when it finds a board. It
+sets |'foldmethod'| to `expr`. When the buffer is not a board, the plugin
+puts back your fold options. The columns are open at the start, if you do
+not set |'foldlevelstart'|. To stop the column folds, refer to
+|kanban-md-fold_columns|.
+
+==============================================================================
+8. VIRTUAL TEXT                                       *kanban-md-virtual-text*
+
+The plugin shows virtual text in board buffers. The virtual text shows WIP
+limit warnings and the lead and cycle times. The plugin updates the virtual
+text when it finds a board, on |BufEnter| and on |BufWritePost|. Refer to
+|kanban-md-show_stats_virtual_text|.
+
+==============================================================================
+9. CONFIGURATION                                            *kanban-md-config*
+
+                                                           *kanban-md.setup()*
+require("kanban-md").setup({opts})
+    Applies {opts} to the default configuration. The options that you do not
+    set keep their default values. You can also set most options for one
+    board, in the `<!-- kanban:config ... -->` comment of the board. The
+    value in the board has priority.
+
+These are the usual options, with their default values: >lua
+    require("kanban-md").setup({
+      default_columns = { "Backlog", "Ready", "In Progress", "Done" },
+      archive_after_days = 30,
+      detection_strategy = "marker",
+      show_stats_virtual_text = true,
+      show_lead_time = true,
+      show_cycle_time = true,
+      fold_columns = true,
+      auto_timestamp = true,
+      persist_card_ids = false,
+      dependency_validation = false,
+      subtask_validation = false,
+      confirm_destructive = true,
+      enable_cursor_positioning = false,
+    })
+<
+For the full list, refer to `lua/kanban-md/config.lua` in the engine.
+
+                                                 *kanban-md-default_columns*
+default_columns ~
+    The columns that |:KanbanNewBoard| makes.
+
+                                               *kanban-md-archive_after_days*
+archive_after_days ~
+    The number of days that a card must be complete before |:KanbanArchive|
+    moves it.
+
+                                               *kanban-md-detection_strategy*
+detection_strategy ~
+    Sets which Markdown files are boards. Files with names that end in
+    `.kanban.md` are always boards.
+    "marker"     A file with `<!-- kanban-board -->` in the first 10 lines.
+                 This is the default.
+    "extension"  Only files with names that end in `.kanban.md`.
+    "both"       A file with the marker, or a file with the extension.
+    "auto"       Legacy. A file with an H6 heading. Files that are not
+                 boards can also agree with this rule.
+
+                                          *kanban-md-show_stats_virtual_text*
+show_stats_virtual_text ~
+    If `true`, the plugin shows |kanban-md-virtual-text|. `show_lead_time`
+    and `show_cycle_time` set which times the virtual text shows.
+
+                                                    *kanban-md-fold_columns*
+fold_columns ~
+    If `true`, each column has a fold (refer to |kanban-md-folds|). To keep
+    your own fold settings, set it to `false`.
+
+                                                  *kanban-md-auto_timestamp*
+auto_timestamp ~
+    If `true`, the plugin sets the timestamp property of a column when a
+    card goes into that column.
+
+                                                *kanban-md-persist_card_ids*
+persist_card_ids ~
+    If `true`, the plugin writes card IDs to the file. If `false`, the
+    plugin makes new IDs each time it parses the board. These IDs do not
+    stay the same. Refer to |:KanbanPersistIds|.
+
+                                           *kanban-md-dependency_validation*
+                                              *kanban-md-subtask_validation*
+dependency_validation ~
+subtask_validation ~
+    Sets the check of `depends_on` and `subtasks` before a card becomes
+    complete:
+    `false` or "off"             No check. This is the default.
+    `true`, "on" or "strict"     The plugin stops the move.
+    "warn"                       The plugin shows a warning and does the
+                                 move.
+    |:KanbanForceCompleteCard| does not do these checks.
+
+                                             *kanban-md-confirm_destructive*
+confirm_destructive ~
+    If `true`, |:KanbanForceCompleteCard| asks you to confirm the move.
+
+                                       *kanban-md-enable_cursor_positioning*
+enable_cursor_positioning ~
+    If `true`, the cursor moves to the new card after |:KanbanNewCard|.
+
+                                           *kanban-md-dependency_marking_hl*
+dependency_marking_hl ~
+    The highlight group for the first card in |:KanbanAddDependency|. The
+    default is "Visual".
+
+==============================================================================
+10. UNDO AND ERRORS                                           *kanban-md-undo*
+
+A command changes the buffer only if the command is successful. A WIP
+limit, a validation check or a trigger can stop a change. If this occurs,
+the buffer does not change and a message shows the cause. A successful
+command replaces the text of the buffer in one change. To undo the command,
+push |u|.
+
+ vim:tw=78:ts=8:noet:ft=help:norl:

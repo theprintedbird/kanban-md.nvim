@@ -43,7 +43,26 @@ jobs:
         run: luarocks install luacheck 1.2.0-1
 
       - name: Lint
-        run: luacheck lua plugin ftdetect tests lazy.lua
+        run: luacheck lua plugin ftdetect tests scripts lazy.lua
+
+  help:
+    name: Help file
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      # No submodule: the check reads only doc/ and Neovim's own help.
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+
+      - uses: rhysd/action-setup-vim@febef33995d6649302e9d88dda81e071b68f16a7 # v1.6.1
+        with:
+          neovim: true
+          version: stable
+
+      - name: Check doc/kanban-md.txt
+        # Fails on a duplicate tag (:helptags) or a |link| with no tag.
+        run: nvim --clean --headless -l scripts/check_doc.lua
 
   test:
     name: Tests (${{ matrix.os }}, nvim ${{ matrix.nvim }})
