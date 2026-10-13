@@ -7,7 +7,6 @@
 - CI 11: handle fork PRs: they do not receive ENGINE_DEPLOY_KEY, so the test job fails at webfactory/ssh-agent; either skip the submodule and test steps with a clear notice when the secret is empty (job env HAS_KEY from secrets.ENGINE_DEPLOY_KEY != empty string, steps gated on it) or state in README/CONTRIBUTING that fork PRs are not accepted; do NOT switch to pull_request_target, which would expose the key to untrusted code <!-- backlog: 1791196924, complexity: 1, id: card_01M463W7NF3P338WCKC9VTDED1 -->
 - CI 13 (optional): StyLua format check: add stylua.toml matching the engine (or agree a config if the engine has none), one-off format commit over lua plugin ftdetect tests lazy.lua, then a stylua --check step (JohnnyMorganz/stylua-action, SHA-pinned) in the lint job; mention the command in CLAUDE.md <!-- backlog: 1791196932, complexity: 1, id: card_01M463W8FEZTVFA56QX9AYPQ62 -->
 - CI 16 (optional, low priority): typos/codespell check and a markdown link check on README.md and SPEC links; once versions are tagged, consider release automation (release-please, a luarocks rockspec and upload, CHANGELOG) <!-- backlog: 1791196944, complexity: 1, id: card_01M463W7TAVKYSJWT0Y8D3SV1V -->
-- Make the "new card" text box centred in the screen, and larger. <!-- backlog: 1791250669, id: card_01M47DR8ARJX5MFFMGD1TK9XGP -->
 - Moving several cards at once between columns <!-- backlog: 1791250713, id: card_01M47DSJT99H34N2A35KEVVXSF -->
 - Remove the extra keypress needed when adding a dependency <!-- backlog: 1791250744, id: card_01M47DTGW3QV7D2V77A8HMHMYZ -->
 - CI 17 (future): widen macOS coverage and containerise local testing: macos-latest already runs nvim stable, so add the v0.9.5 minimum and nightly legs on macOS too (drop the ubuntu-only include entries in .github/workflows/test.yml, nightly stays continue-on-error); for local runs add a container setup (Dockerfile or Containerfile plus a script such as tests/run_in_container.sh, working with docker or podman) that builds Linux images with a chosen nvim version (stable, 0.9.5, nightly), mounts the checkout including lib/kanban-md-engine read-only, caches plenary pinned via PLENARY_REF, and runs ./tests/run_tests.sh; document it in README and CLAUDE.md; containers only cover Linux, so macOS results still come from CI; this also gives the isolation the test-runner-loads-user-config card asks for; still, always use --clean <!-- backlog: 1791303894, complexity: 2, id: card_01M490GHBS4WFKAA7VBJY8V3PV -->
@@ -19,7 +18,9 @@
 
 
 
+
 ###### In Progress
+
 
 
 
@@ -57,3 +58,4 @@
 - CI 12: pin the luacheck version in the lint job (luarocks install luacheck <ver>) so a new upstream release cannot turn lint red with no code change; take the version from the engine rockspec test_dependencies so both repos agree <!-- backlog: 1791196928, complexity: 1, done: 1791444020, id: card_01M463W8D4K484ZGNCEES8DSKJ, in_progress: 1791444006, ready: 1791305177 -->
 - CI 14 (optional): vimdoc and help check: there is no doc/ directory, so :help kanban-md does not exist; write doc/kanban-md.txt (by hand or generated from README with panvimdoc), then add a CI step running nvim --headless -c "helptags doc" -c q that fails on duplicate or bad tags. Use ASD-STE100 Simplified Technical English. <!-- backlog: 1791196936, complexity: 2, done: 1791627804, id: card_01M463W8GGZDDD2GJAK4D5RET3, ready: 1791627300 -->
 - Update README, it's out of date, especially the section on the different projects. <!-- backlog: 1791303103, complexity: 2, done: 1791630667, id: card_01M48ZRD12231KAR28XP9HPY8Y, in_progress: 1791630622, ready: 1791630337 -->
+- Make the "new card" text box centred in the screen, and larger. <!-- backlog: 1791250669, complexity: 2, done: 1791877568, id: card_01M47DR8ARJX5MFFMGD1TK9XGP, in_progress: 1791877383, ready: 1791876726 -->

@@ -77,6 +77,7 @@ describe("filetype detection #neovim-only", function()
   it("sets the kanban filetype on :KanbanNewBoard and keeps it on write", function()
     local original_input = vim.ui.input
     vim.ui.input = function(_, callback) callback("Test Board") end
+    config.setup({ input = { native = true } })
 
     local buf = open("new.md", { "" })
     assert.equals("markdown", vim.bo[buf].filetype)
@@ -93,6 +94,7 @@ describe("filetype detection #neovim-only", function()
   it("writes the marker on :KanbanNewBoard so the file is detected when reopened", function()
     local original_input = vim.ui.input
     vim.ui.input = function(_, callback) callback("Test Board") end
+    config.setup({ input = { native = true } })
 
     local buf = open("marked.md", { "" })
     local path = vim.api.nvim_buf_get_name(buf)

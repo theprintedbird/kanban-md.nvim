@@ -179,6 +179,25 @@ require('kanban-md').setup({
 })
 ```
 
+## Input Window
+
+Commands that ask for text (`:KanbanNewCard`, `:KanbanNewBoard`, `:KanbanNewColumn`, …) open a floating window in the middle of the editor, with the prompt as its title. It is 60% of the editor width (between 40 and 100 columns). Long text wraps, and the window grows up to 5 lines so the whole card stays visible.
+
+The window opens in insert mode. `<CR>` submits from insert or normal mode; `<Esc>` drops to normal mode so you can use motions, and `<Esc>` or `q` in normal mode cancels, as does `<C-c>` or moving to another window. A card is one line, so text pasted over several lines is joined with spaces.
+
+```lua
+require('kanban-md').setup({
+  input = {
+    width = 0.6,      -- fraction of the editor width, or a column count if > 1
+    min_width = 40,
+    max_width = 100,
+    max_height = 5,   -- lines
+    border = "rounded", -- any nvim_open_win() border; "none" also drops the title
+    native = false,   -- true: use vim.ui.input (dressing, snacks, …) instead
+  },
+})
+```
+
 ## Configuration
 
 Configuration is defined and validated by the engine (`kanban-md-engine`), but is typically set through this plugin's `setup()`:
@@ -196,6 +215,7 @@ require("kanban-md").setup({
   show_stats_virtual_text = true,
   show_cycle_time = true,
   fold_columns = true, -- one fold per column (Neovim only)
+  input = { width = 0.6, max_height = 5 }, -- the prompt window (Neovim only, see Input Window)
 
   -- Automation
   auto_timestamp = true,

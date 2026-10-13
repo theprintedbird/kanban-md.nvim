@@ -280,6 +280,14 @@ These are the usual options, with their default values: >lua
       show_lead_time = true,
       show_cycle_time = true,
       fold_columns = true,
+      input = {
+        native = false,
+        width = 0.6,
+        min_width = 40,
+        max_width = 100,
+        max_height = 5,
+        border = "rounded",
+      },
       auto_timestamp = true,
       persist_card_ids = false,
       dependency_validation = false,
@@ -319,6 +327,35 @@ show_stats_virtual_text ~
 fold_columns ~
     If `true`, each column has a fold (refer to |kanban-md-folds|). To keep
     your own fold settings, set it to `false`.
+
+                                                           *kanban-md-input*
+input ~
+    Sets the window for the text that a command asks for. An example is the
+    text of a card in |:KanbanNewCard|. The window is a float in the middle
+    of the editor. The title of the window is the prompt. When the text is
+    long, the text wraps and the window becomes taller.
+
+    The window starts in Insert mode. Use these keys:
+    - <CR> in Insert mode or Normal mode gives the text to the command.
+    - <Esc> in Insert mode goes to Normal mode.
+    - <Esc> or `q` in Normal mode cancels.
+    - <C-c> cancels.
+    If you go to a different window, the plugin cancels. A card has one
+    line. If the text has more than one line, the plugin joins the lines
+    with spaces.
+
+    The table has these fields:
+    `native`      If `true`, the plugin uses |vim.ui.input()| and not the
+                  float. The default is `false`.
+    `width`       The width of the text. A number that is 1 or less is a
+                  part of the editor width. A number more than 1 is a
+                  number of columns. The default is `0.6`.
+    `min_width`   The minimum width in columns. The default is `40`.
+    `max_width`   The maximum width in columns. The default is `100`.
+    `max_height`  The maximum height in lines. The default is `5`.
+    `border`      The border of the window. Refer to |nvim_open_win()|.
+                  The default is "rounded". With "none", the window has no
+                  title.
 
                                                   *kanban-md-auto_timestamp*
 auto_timestamp ~

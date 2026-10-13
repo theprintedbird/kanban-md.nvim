@@ -59,11 +59,9 @@ local NeovimAdapter = Adapter.new({
 
   -- Required: UI prompts
   prompt_input = function(self, prompt, default, callback)
-    -- Prompt user for input, call callback(input)
-    vim.ui.input({
-			prompt = prompt,
-			default = default,
-		}, callback)
+    -- Prompt user for input, call callback(input); a centred float unless
+    -- `input.native` is set, which uses vim.ui.input
+    require("kanban-md.input").open(prompt, default, callback)
   end,
 
 	---@class vim.ui.SelectOpts

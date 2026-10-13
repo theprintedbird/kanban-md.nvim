@@ -33,7 +33,9 @@ There is no build step. Lint with `luacheck lua plugin ftdetect tests scripts la
 
 The plugin (`lua/kanban-md/`) and the engine (`lib/kanban-md-engine/lua/kanban-md/`) use the **same module namespace**. `require('kanban-md.board')` resolves to the engine; `require('kanban-md.commands')` resolves to the plugin. The engine is made reachable by prepending `lib/kanban-md-engine/lua` to `package.path`, a step repeated in `plugin/kanban-md.lua`, `lua/kanban-md/init.lua`, `tests/test_helper.lua` and `tests/run_tests.lua`. If the submodule path changes, update all four.
 
-No module may exist in both trees. Neovim's runtimepath loader runs before the `package.path` searcher, so a plugin copy would silently shadow the engine's. `virtual_text.lua`, `adapters/interface.lua`, `adapters/cli.lua` and the stock `extras/*_triggers.lua` live only in the engine. The plugin owns only `commands.lua`, `detect.lua`, `fold.lua`, `init.lua`, `adapters/neovim.lua` and `extras/cursor_triggers.lua`.
+No module may exist in both trees. Neovim's runtimepath loader runs before the `package.path` searcher, so a plugin copy would silently shadow the engine's. `virtual_text.lua`, `adapters/interface.lua`, `adapters/cli.lua` and the stock `extras/*_triggers.lua` live only in the engine. The plugin owns only `commands.lua`, `detect.lua`, `fold.lua`, `init.lua`, `input.lua`, `adapters/neovim.lua` and `extras/cursor_triggers.lua`.
+
+The adapter's `prompt_input` opens `input.lua`'s centred floating window, not `vim.ui.input`, unless the `input.native` option is set. Specs that stub `vim.ui.input` must set `config.setup({ input = { native = true } })`.
 
 ### Load / setup flow
 
