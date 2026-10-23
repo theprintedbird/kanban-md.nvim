@@ -2,6 +2,8 @@
 
 This file provides guidance to Claude Code (claude.ai/code) when working with code in this repository.
 
+Use British English.
+
 ## What this repo is
 
 kanban-md.nvim is only the **Neovim layer** of the kanban-md project: user commands, buffer/cursor I/O, virtual text, column folds, and the Neovim adapter. It adds no key mappings. All parsing, writing, the Board/Column/Card model, triggers, stats, config and validation live in the **kanban-md-engine** git submodule at `lib/kanban-md-engine` (it has its own `CLAUDE.md`, `Makefile` and busted tests). The markdown syntax and the engine's behaviour are specified in the engine's `SPEC.md`. Engine bugs should be fixed in the engine repo, not patched here.
