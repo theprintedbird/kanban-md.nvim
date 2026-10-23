@@ -4,6 +4,15 @@ require('tests.test_helper')
 local config = require('kanban-md.config')
 local input = require('kanban-md.input')
 
+-- Neovim 0.9 returns a float's row and col as a typed float table,
+-- { [vim.type_idx] = vim.types.float, [vim.val_idx] = n }; 0.10+ returns n
+local function number(value)
+  if type(value) == "table" then
+    return value[vim.val_idx]
+  end
+  return value
+end
+
 local function feed(keys)
   vim.api.nvim_feedkeys(vim.api.nvim_replace_termcodes(keys, true, false, true), "x", false)
 end
@@ -51,8 +60,8 @@ describe("floating input #neovim-only", function()
     assert.equals(48, cfg.width) -- 60% of 80 columns
     assert.equals(1, cfg.height)
     -- Centred, counting the two border cells
-    assert.equals(math.floor((80 - 48 - 2) / 2), cfg.col)
-    assert.equals(math.floor((24 - vim.o.cmdheight - 1 - 2) / 2), cfg.row)
+    assert.equals(math.floor((80 - 48 - 2) / 2), number(cfg.col))
+    assert.equals(math.floor((24 - vim.o.cmdheight - 1 - 2) / 2), number(cfg.row))
     assert.equals(win, vim.api.nvim_get_current_win())
   end)
 
